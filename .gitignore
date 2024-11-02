@@ -1,0 +1,5 @@
+# Ignore history files
+/.history
+
+# Exclude files specific to my machine
+/ForceConnectWifi/*.bat
