@@ -2,6 +2,10 @@
 
 A detailed Oh My Posh theme that provides system and environment information in a visually appealing format without intruding on the command line space.
 
+## 📸 Preview
+
+![screenshot preview of plenty-of-info](preview.png)
+
 ## 📌 Features
 
 - 💻 System information display (OS, memory usage)
@@ -34,10 +38,6 @@ oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Express
 ```
 
 For other shells, refer to the [Oh My Posh Customisation docs](https://ohmyposh.dev/docs/installation/customize). 
-
-## 📸 Preview
-
-![screenshot preview of plenty-of-info](preview.png)
 
 ## 📝 License
 
