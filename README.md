@@ -31,9 +31,7 @@ oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Express
 
 1. Fork the repository
 2. Create your feature branch
-3. Submit a pull requestFork the repository
-Create your feature branch
-Submit a pull request
+3. Submit a pull request
 
 ## 📝 License
 
