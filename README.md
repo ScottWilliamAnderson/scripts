@@ -15,6 +15,12 @@ A collection of useful scripts I've created or make use of.
 .\ForceConnectWiFi\ForceConnectWiFi.ps1 -networkName "Your_Network_Name" -maxRetries 5 -retryIntervalSeconds 10
 ```
 
+### Shell Customisations
+- **plenty-of-info** (Oh My Posh Theme) - Unintrusive theme with plenty of system, environment information
+```powershell
+oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Expression
+```
+
 ## 🚀 Getting Started
 
 1. Clone this repository
