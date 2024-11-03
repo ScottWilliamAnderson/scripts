@@ -10,13 +10,13 @@ A collection of useful scripts I've created or make use of.
 ## 📂 Available Scripts
 
 ### Network Utilities
-- **ForceConnectWiFi** (PowerShell) - WiFi connection manager with retry capabilities
+- [**ForceConnectWiFi**](ForceConnectWifi/README.md) (PowerShell) - WiFi connection manager with retry capabilities
 ```powershell
 .\ForceConnectWiFi\ForceConnectWiFi.ps1 -networkName "Your_Network_Name" -maxRetries 5 -retryIntervalSeconds 10
 ```
 
 ### Shell Customisations
-- **plenty-of-info** (Oh My Posh Theme) - Unintrusive theme with plenty of system, environment information
+- [**plenty-of-info**](oh-my-posh/README.md) (Oh My Posh Theme) - Unintrusive theme with plenty of system, environment information
 ```powershell
 oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Expression
 ```
