@@ -1,5 +1,12 @@
 # Utility Scripts Collection 🛠️
 
+[![Last Commit](https://img.shields.io/github/last-commit/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
+[![GitHub Issues](https://img.shields.io/github/issues/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
+[![GitHub Stars](https://img.shields.io/github/stars/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
+[![GitHub Forks](https://img.shields.io/github/forks/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
+[![Repository Size](https://img.shields.io/github/repo-size/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
+
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![Python](https://img.shields.io/badge/Python-3.6+-green.svg)](https://www.python.org/)
 [![Bash](https://img.shields.io/badge/Bash-4.0+-orange.svg)](https://www.gnu.org/software/bash/)
