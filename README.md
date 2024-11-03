@@ -4,6 +4,12 @@
 [![Python](https://img.shields.io/badge/Python-3.6+-green.svg)](https://www.python.org/)
 [![Bash](https://img.shields.io/badge/Bash-4.0+-orange.svg)](https://www.gnu.org/software/bash/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Last Commit](https://img.shields.io/github/last-commit/ScottWilliamAnderson/scripts)](https://img.shields.io/github/last-commit/ScottWilliamAnderson/scripts)
+[![GitHub Issues](https://img.shields.io/github/issues/ScottWilliamAnderson/scripts)](https://img.shields.io/github/issues/ScottWilliamAnderson/scripts)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/ScottWilliamAnderson/scripts)](https://img.shields.io/github/issues-pr/ScottWilliamAnderson/scripts)
+[![GitHub Stars](https://img.shields.io/github/stars/ScottWilliamAnderson/scripts)](https://img.shields.io/github/stars/ScottWilliamAnderson/scripts)
+[![GitHub Forks](https://img.shields.io/github/forks/ScottWilliamAnderson/scripts)](https://img.shields.io/github/forks/ScottWilliamAnderson/scripts)
+[![Repository Size](https://img.shields.io/github/repo-size/ScottWilliamAnderson/scripts)](https://img.shields.io/github/repo-size/ScottWilliamAnderson/scripts)
 
 A collection of useful scripts I've created or make use of.
 
