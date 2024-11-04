@@ -94,6 +94,15 @@
           "template": " \ue73c {{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }} "
         },
         {
+          "type": "docker",
+          "style": "diamond",
+          "background": "#FEF5ED",
+          "foreground": "#011627",
+          "leading_diamond": "\ue0b2",
+          "trailing_diamond": "<transparent,#FEF5ED>\ue0b2</>",
+          "template": "{{ if .Context }} \uf308 {{ .Context }} {{ end }}"
+        },
+        {
           "background": "#FEF5ED",
           "foreground": "#011627",
           "leading_diamond": "\ue0b2",
