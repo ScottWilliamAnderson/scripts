@@ -15,6 +15,7 @@ A detailed Oh My Posh theme that provides system and environment information in 
 - 🔋 Battery status indicator
 - ⏱️ Command execution time
 - 🐍 Python environment indicator
+- 🐳 Docker environment information
 
 ## 🎨 Style
 
