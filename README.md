@@ -28,6 +28,12 @@ A collection of useful scripts I've created or make use of.
 oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Expression
 ```
 
+### Chocolatey
+- [**packages.config**](chocolatey/README.md) (Chocolatey) - List of installed Chocolatey packages
+```powershell
+choco install packages.config
+```
+
 ## 🚀 Getting Started
 
 1. Clone this repository
