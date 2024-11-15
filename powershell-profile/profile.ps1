@@ -22,7 +22,8 @@ Import-Module posh-git
 # Import oh-my-posh theme
 oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression
 
-
+# Uncomment the following line to enable default behaviour of clearing the terminal screen after the profile setup
+# clear
 
 
 # Useful Functions
