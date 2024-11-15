@@ -31,7 +31,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
    if (-not $env:USERPROFILE) {
        Write-Host "USERPROFILE environment variable is not set. Skipping profile import."
        return
-   }s
+   }
 
    # Define the path to the repository's profile script here and uncomment the following line
    # $repoPath = "$env:USERPROFILE\path\to\scripts\"
