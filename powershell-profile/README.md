@@ -62,7 +62,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
    }
 
    # Define the path to the repository's profile script here and uncomment the following line
-   # $repoPath = "$env:USERPROFILE\path\to\scripts\"
+   # $repoPath = "$env:USERPROFILE\path\to\scripts"
 
    # Check if the repository profile script exists
    if (Test-Path $repoPath) {
