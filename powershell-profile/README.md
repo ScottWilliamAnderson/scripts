@@ -40,6 +40,20 @@ This guide will help you set up your PowerShell profile to import a custom profi
 
    Add the following code snippet to your main PowerShell profile script (e.g., `...\PowerShell\Microsoft.PowerShell_profile.ps1`):
 
+   You can open your main profile script by running:
+
+   ```powershell
+    notepad $PROFILE
+    ```
+
+    or
+
+    ```powershell
+    code $PROFILE
+    ```
+
+    Once the profile script is open, add the following code snippet:
+
    ```powershell
    # Check for required environment variables
    if (-not $env:USERPROFILE) {
