@@ -1,10 +1,24 @@
-# PowerShell Profile Setup Guide
+# PowerShell Profile Setup Guide 🖥️
 
-## Introduction
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-blue.svg)](https://github.com/PowerShell/PowerShell)
 
-This guide will help you set up your PowerShell profile to import a custom profile script from this repository. This setup will allow you to easily customize and synchronize your PowerShell environment across different machines.
+## 📚 Overview
 
-## Prerequisites
+A customized PowerShell profile with environment handling, package management, and productivity features.
+
+This guide will help you set up your PowerShell profile to import a custom profile script from this repository. 
+
+## 📌 Features
+
+- 🔄 Git-based auto-update mechanism
+- 📦 Chocolatey integration
+- 🎨 Oh My Posh theme support
+- 🌿 Posh-Git integration
+- 🔑 Elevated privileges helper (sudo)
+- 🌍 Environment variable management
+- ⚡ Performance optimizations
+
+## 🔍 Requirements
 
 - PowerShell 5.1 or later
 - Git installed
@@ -12,7 +26,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - Chocolatey installed
 - Posh-Git installed
 
-## Setup Instructions
+## 🚀 Setup Instructions
 
 1. **Clone the Repository**
 
@@ -46,8 +60,28 @@ This guide will help you set up your PowerShell profile to import a custom profi
    }
    ```
 
-## Conclusion
+3. **Customize the Repository Path**
 
-By following these steps, you will have a customized PowerShell profile that can be easily synchronized across different environments. The autoupdate mechanism ensures that you always have the latest version of the profile script from the repository.
+   Uncomment the `$repoPath` variable in the code snippet and set it to the path where you cloned the repository.
+
+   For example:
+
+   ```powershell
+   $repoPath = "env:USERPROFILE\Documents\GitHub\scripts"
+   ```
+
+## ⚙️ Available Commands
+
+| Command | Description |
+|---------|------------|
+| `pull-profile` | Updates profile from Git repository |
+| `sudo` | Opens elevated Windows Terminal |
+| `refreshenv` | Refreshes environment variables |
+| `choco` | Chocolatey package manager |
+| `posh-git` | Posh-Git integration |
+| `oh-my-posh` | Oh My Posh theme support |
+| `$PROFILE` | Path to the current profile script |
+
+
 
 For more information, refer to the main repository [here](../README.md).
