@@ -81,7 +81,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
    For example:
 
    ```powershell
-   $repoPath = "env:USERPROFILE\Documents\GitHub\scripts"
+   $repoPath = "$env:USERPROFILE\Documents\GitHub\scripts"
    ```
 
 ## ⚙️ Available Commands
