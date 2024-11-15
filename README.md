@@ -34,6 +34,28 @@ oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Express
 choco install packages.config
 ```
 
+### PowerShell Profile
+- [**profile.ps1**](powershell-profile/README.md) (PowerShell) - Custom PowerShell profile script with environment handling, autoupdate mechanism, and additional features. See the [README](powershell-profile/README.md) for the full list of features.
+```powershell
+# Check for required environment variables
+if (-not $env:USERPROFILE) {
+    Write-Host "USERPROFILE environment variable is not set. Skipping profile import."
+    return
+}
+
+# Define the path to the repository's profile script here
+$repoPath = "$env:USERPROFILE\path\to\scripts\"
+
+# Check if the repository profile script exists
+if (Test-Path $repoPath) {
+    $profilePath = "$repoPath\powershell-profile\profile.ps1"
+    Write-Host "Importing profile from $profilePath"
+    . $profilePath 
+} else {
+    Write-Host "Repository profile script not found at $repoPath"
+}
+```
+
 ## 🚀 Getting Started
 
 1. Clone this repository
