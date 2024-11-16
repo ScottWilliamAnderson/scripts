@@ -28,14 +28,7 @@ A collection of useful scripts I've created or make use of.
 oh-my-posh init pwsh --config 'path/to/plenty-of-info.omp.json' | Invoke-Expression
 ```
 
-### Chocolatey
-- [**packages.config**](chocolatey/README.md) (Chocolatey) - List of installed Chocolatey packages
-```powershell
-choco install packages.config
-```
-
-### PowerShell Profile
-- [**profile.ps1**](powershell-profile/README.md) (PowerShell) - Custom PowerShell profile script with environment handling, autoupdate mechanism, and additional features. See the [README](powershell-profile/README.md) for the full list of features.
+- [**profile.ps1**](powershell-profile/README.md) (PowerShell) - Custom PowerShell profile script with environment handling, autoupdate mechanism, and additional features. See the [README](powershell-profile/README.md) for the full list of features and how to install.
 ```powershell
 # Check for required environment variables
 if (-not $env:USERPROFILE) {
@@ -54,6 +47,12 @@ if (Test-Path $repoPath) {
 } else {
     Write-Host "Repository profile script not found at $repoPath"
 }
+```
+
+### Chocolatey
+- [**packages.config**](chocolatey/README.md) (Chocolatey) - List of installed Chocolatey packages
+```powershell
+choco install packages.config
 ```
 
 ## 🚀 Getting Started
