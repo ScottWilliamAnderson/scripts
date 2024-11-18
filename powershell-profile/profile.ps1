@@ -50,3 +50,17 @@ function pull-profile {
 function sudo {
     Start-Process -verb RunAs wt
 }
+
+# sleep function to pause execution for a specified number of seconds
+function sleep {
+    param (
+        [int]$seconds
+    )
+    
+    Start-Sleep -Seconds $seconds
+}
+
+# mklink function to create symbolic links
+function mklink { 
+    cmd /c mklink $args 
+}

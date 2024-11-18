@@ -17,6 +17,8 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - 🔑 Elevated privileges helper (sudo)
 - 🌍 Environment variable management
 - ⚡ Performance optimizations
+- 💤 Sleep function to pause execution
+- 🔗 Mklink function to create symbolic links
 
 ## 🔍 Requirements
 
@@ -95,7 +97,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `posh-git` | Posh-Git integration |
 | `oh-my-posh` | Oh My Posh theme support |
 | `$PROFILE` | Path to the current profile script |
-
-
+| `sleep` | Pauses execution for a specified number of seconds |
+| `mklink` | Creates symbolic links |
 
 For more information, refer to the main repository [here](../README.md).
