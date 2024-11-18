@@ -3,3 +3,6 @@
 
 # Exclude files specific to my machine
 /ForceConnectWifi/*.bat
+
+# Ignore .vscode folder
+.vscode/
