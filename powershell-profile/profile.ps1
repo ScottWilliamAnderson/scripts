@@ -20,33 +20,29 @@ if (-not $env:USERPROFILE) {
     return
 }
 
-# Timing for Chocolatey profile import
-$chocoStartTime = Get-Date
-# Import chocolatey profile so it can run refreshenv command
-Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
-$chocoEndTime = Get-Date
-Log-Timing -section "Chocolatey Profile Import" -startTime $chocoStartTime -endTime $chocoEndTime
+# Check if logging is enabled
+$enableLogging = $false
+if ($env:ENABLE_PROFILE_LOGGING -eq "true") {
+    $enableLogging = $true
+}
 
-# Timing for environment variables refresh
-$envStartTime = Get-Date
-# Refresh environment variables
-refreshenv
-$envEndTime = Get-Date
-Log-Timing -section "Environment Variables Refresh" -startTime $envStartTime -endTime $envEndTime
+# List of commands to run and their descriptions
+$commands = @(
+    @{ Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 }; Description = "Chocolatey Profile Import" },
+    @{ Command = { refreshenv }; Description = "Environment Variables Refresh" },
+    @{ Command = { Import-Module posh-git }; Description = "Posh-Git Import" },
+    @{ Command = { oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression }; Description = "Oh-My-Posh Theme Import" }
+)
 
-# Timing for posh-git import
-$poshGitStartTime = Get-Date
-# Import posh-git
-Import-Module posh-git
-$poshGitEndTime = Get-Date
-Log-Timing -section "Posh-Git Import" -startTime $poshGitStartTime -endTime $poshGitEndTime
-
-# Timing for oh-my-posh theme import
-$ompStartTime = Get-Date
-# Import oh-my-posh theme
-oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression
-$ompEndTime = Get-Date
-Log-Timing -section "Oh-My-Posh Theme Import" -startTime $ompStartTime -endTime $ompEndTime
+# Run each command and log timing if enabled
+foreach ($cmd in $commands) {
+    $startTime = Get-Date
+    & $cmd.Command
+    $endTime = Get-Date
+    if ($enableLogging) {
+        Log-Timing -section $cmd.Description -startTime $startTime -endTime $endTime
+    }
+}
 
 # Uncomment the following line to enable default behaviour of clearing the terminal screen after the profile setup
 # clear
