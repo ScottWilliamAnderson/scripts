@@ -1,6 +1,16 @@
 # PowerShell Profile Script
 
-
+# Function to log timing information
+function Log-Timing {
+    param (
+        [string]$section,
+        [datetime]$startTime,
+        [datetime]$endTime
+    )
+    $duration = $endTime - $startTime
+    $logEntry = "$section - Start: $startTime, End: $endTime, Duration: $duration"
+    Add-Content -Path "$PSScriptRoot\profile_timing.log" -Value $logEntry
+}
 
 # Profile Setup
 
@@ -10,21 +20,32 @@ if (-not $env:USERPROFILE) {
     return
 }
 
-# Import chocolatey profile so it can run refreshenv command
-Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+# Check if logging is enabled
+$enableLogging = $false
+if ($env:ENABLE_PROFILE_LOGGING -eq "true") {
+    $enableLogging = $true
+}
 
-# Refresh environment variables
-refreshenv
+# List of commands to run and their descriptions
+$commands = @(
+    @{ Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 }; Description = "Chocolatey Profile Import" },
+    @{ Command = { refreshenv }; Description = "Environment Variables Refresh" },
+    @{ Command = { Import-Module posh-git }; Description = "Posh-Git Import" },
+    @{ Command = { oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression }; Description = "Oh-My-Posh Theme Import" }
+)
 
-# Import posh-git
-Import-Module posh-git
-
-# Import oh-my-posh theme
-oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression
+# Run each command and log timing if enabled
+foreach ($cmd in $commands) {
+    $startTime = Get-Date
+    & $cmd.Command
+    $endTime = Get-Date
+    if ($enableLogging) {
+        Log-Timing -section $cmd.Description -startTime $startTime -endTime $endTime
+    }
+}
 
 # Uncomment the following line to enable default behaviour of clearing the terminal screen after the profile setup
 # clear
-
 
 # Useful Functions
 

@@ -19,6 +19,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - ⚡ Performance optimizations
 - 💤 Sleep function to pause execution
 - 🔗 Mklink function to create symbolic links
+- ⏱️ Timing and logging for performance measurement
 
 ## 🔍 Requirements
 
@@ -99,5 +100,13 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `$PROFILE` | Path to the current profile script |
 | `sleep` | Pauses execution for a specified number of seconds |
 | `mklink` | Creates symbolic links |
+
+## ⏱️ Timing and Logging
+
+The profile script now includes timing and logging functionality to measure the performance of each section. Timing information is logged to a file named `profile_timing.log` in the `powershell-profile` directory. The log file records the start time, end time, and duration for each section of the profile script.
+
+## 📝 Optional Logging
+
+Logging is optional and controlled by the `ENABLE_PROFILE_LOGGING` environment variable. By default, logging is disabled. To enable logging, set the `ENABLE_PROFILE_LOGGING` environment variable to `true`.
 
 For more information, refer to the main repository [here](../README.md).
