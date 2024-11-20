@@ -2,9 +2,26 @@
 
 # Function to log timing information
 function Log-Timing {
+    <#
+    .SYNOPSIS
+        Logs timing information for a specific section.
+    .PARAMETER section
+        The name of the section being logged.
+    .PARAMETER startTime
+        The start time of the section.
+    .PARAMETER endTime
+        The end time of the section.
+    .OUTPUTS
+        None
+    #>
     param (
+        [Parameter(Mandatory = $true)]
         [string]$section,
+        
+        [Parameter(Mandatory = $true)]
         [datetime]$startTime,
+        
+        [Parameter(Mandatory = $true)]
         [datetime]$endTime
     )
     $duration = $endTime - $startTime
@@ -51,6 +68,12 @@ foreach ($cmd in $commands) {
 
 # Autoupdate mechanism
 function pull-profile {
+    <#
+    .SYNOPSIS
+        Updates the profile from the Git repository and refreshes the PowerShell profile.
+    .OUTPUTS
+        None
+    #>
     # Store the current directory to navigate back
     $currentDir = Get-Location
 
@@ -69,12 +92,27 @@ function pull-profile {
 
 # sudo command to open an admin terminal
 function sudo {
+    <#
+    .SYNOPSIS
+        Opens an elevated Windows Terminal.
+    .OUTPUTS
+        None
+    #>
     Start-Process -verb RunAs wt
 }
 
 # sleep function to pause execution for a specified number of seconds
 function sleep {
+    <#
+    .SYNOPSIS
+        Pauses execution for a specified number of seconds.
+    .PARAMETER seconds
+        The number of seconds to pause execution.
+    .OUTPUTS
+        None
+    #>
     param (
+        [Parameter(Mandatory = $true)]
         [int]$seconds
     )
     
@@ -83,5 +121,17 @@ function sleep {
 
 # mklink function to create symbolic links
 function mklink { 
+    <#
+    .SYNOPSIS
+        Creates symbolic links.
+    .PARAMETER args
+        The arguments to pass to the mklink command.
+    .OUTPUTS
+        None
+    #>
+    param (
+        [Parameter(Mandatory = $true)]
+        [string[]]$args
+    )
     cmd /c mklink $args 
 }
