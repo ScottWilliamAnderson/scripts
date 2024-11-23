@@ -8,7 +8,6 @@
 [![Repository Size](https://img.shields.io/github/repo-size/ScottWilliamAnderson/scripts)](https://github.com/ScottWilliamAnderson/scripts)
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-blue.svg)](https://github.com/PowerShell/PowerShell)
-[![Python](https://img.shields.io/badge/Python-3.6+-green.svg)](https://www.python.org/)
 [![Bash](https://img.shields.io/badge/Bash-4.0+-orange.svg)](https://www.gnu.org/software/bash/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
