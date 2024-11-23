@@ -11,7 +11,7 @@
 [![Bash](https://img.shields.io/badge/Bash-4.0+-orange.svg)](https://www.gnu.org/software/bash/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A collection of useful scripts I've created or make use of.
+A collection of useful scripts I've created, or make use of.
 
 ## 📂 Available Scripts
 
