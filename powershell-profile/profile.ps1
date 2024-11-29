@@ -43,23 +43,97 @@ if ($env:ENABLE_PROFILE_LOGGING -eq "true") {
     $enableLogging = $true
 }
 
+function copilot-setup {
+    <#
+    .SYNOPSIS
+        Sets up the github copilot profile.
+    .PARAMETER Force
+        Aliases: -f
+        Forces regeneration of the copilot profile even if it exists.
+    .OUTPUTS
+        None
+    .NOTES
+        https://github.com/cli/cli#installation
+    #>
+    param (
+        [Alias("f")]
+        [switch]$Force
+    )
+
+    # Run the command
+    gh copilot --version > $null
+
+    # Check the exit code
+    if ($LASTEXITCODE -eq 0) {
+        # If $GH_PROFILE is not set, set it to the default value
+        if (-not $GH_COPILOT_PROFILE) {
+            $GH_COPILOT_PROFILE = Join-Path -Path $(Split-Path -Path $PROFILE -Parent) -ChildPath "gh-copilot.ps1"
+        }
+        # If the profile does not exist or the force flag is set, create the profile
+        if ((-not (Test-Path $GH_COPILOT_PROFILE)) -or $Force) {
+            gh copilot alias -- pwsh | Out-File ( New-Item -Path $GH_COPILOT_PROFILE -Force )
+        }
+        . $GH_COPILOT_PROFILE
+
+    } else {
+        Write-Output "Github Copilot is not installed. Skipping setup."
+    }
+}
+
 # List of commands to run and their descriptions
 $commands = @(
-    @{ Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 }; Description = "Chocolatey Profile Import" },
-    @{ Command = { refreshenv }; Description = "Environment Variables Refresh" },
-    @{ Command = { Import-Module posh-git }; Description = "Posh-Git Import" },
-    @{ Command = { oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression }; Description = "Oh-My-Posh Theme Import" }
+    @{ Verb = "Importing";
+       Description = "Chocolatey Profile";
+       Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 } },
+    @{ Verb = "Charging";
+       Description = "Posh-Git";
+       Command = { Import-Module posh-git } },
+    @{ Verb = "Painting";
+       Description = "Oh-My-Posh Theme";
+       Command = { oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression } },
+    @{ Verb = "Waking";
+       Description = "Github Copilot";
+       Command = { copilot-setup } },
+    @{ Verb = "Refreshing";
+       Description = "Environment Variables";
+       Command = { refreshenv > $null } }
 )
 
 # Run each command and log timing if enabled
+$total = $commands.Count
+$counter = 0
+
+# Define an array of "beep boop" animations
+$beepBoopAnimations = @("[-. ] Beep boop   ", 
+                        "[ o-] Beep boop.  ", 
+                        "[-O ] Beep boop.. ", 
+                        "[ o-] Beep boop...")
+
+# Save the existing progress bar style
+$existingView = $PSStyle.Progress.View
+
 foreach ($cmd in $commands) {
+    $counter++
+    $percentComplete = ($counter / $total) * 100
+
+    # Calculate the index for the animation frame
+    $animationIndex = ($counter - 1) % $beepBoopAnimations.Count
+    $activityText = $beepBoopAnimations[$animationIndex]
+
+    Write-Progress -Activity $activityText -Status " $($cmd.Verb) $($cmd.Description)... " -PercentComplete $percentComplete
+
     $startTime = Get-Date
     & $cmd.Command
     $endTime = Get-Date
+
     if ($enableLogging) {
         Log-Timing -section $cmd.Description -startTime $startTime -endTime $endTime
     }
 }
+
+# Reset progress bar style to default
+$PSStyle.Progress.View = $existingView
+
 
 # Uncomment the following line to enable default behaviour of clearing the terminal screen after the profile setup
 # clear
