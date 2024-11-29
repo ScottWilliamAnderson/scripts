@@ -79,21 +79,58 @@ function copilot-setup {
 
 # List of commands to run and their descriptions
 $commands = @(
-    @{ Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 }; Description = "Chocolatey Profile Import" },
-    @{ Command = { refreshenv }; Description = "Environment Variables Refresh" },
-    @{ Command = { Import-Module posh-git }; Description = "Posh-Git Import" },
-    @{ Command = { oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression }; Description = "Oh-My-Posh Theme Import" }
+    @{ Verb = "Importing";
+       Description = "Chocolatey Profile";
+       Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 } },
+    @{ Verb = "Charging";
+       Description = "Posh-Git";
+       Command = { Import-Module posh-git } },
+    @{ Verb = "Painting";
+       Description = "Oh-My-Posh Theme";
+       Command = { oh-my-posh init pwsh --config "$repoPath\oh-my-posh\plenty-of-info.omp.json" | Invoke-Expression } },
+    @{ Verb = "Waking";
+       Description = "Github Copilot";
+       Command = { copilot-setup } },
+    @{ Verb = "Refreshing";
+       Description = "Environment Variables";
+       Command = { refreshenv > $null } }
 )
 
 # Run each command and log timing if enabled
+$total = $commands.Count
+$counter = 0
+
+# Define an array of "beep boop" animations
+$beepBoopAnimations = @("[-. ] Beep boop   ", 
+                        "[ o-] Beep boop.  ", 
+                        "[-O ] Beep boop.. ", 
+                        "[ o-] Beep boop...")
+
+# Save the existing progress bar style
+$existingView = $PSStyle.Progress.View
+
 foreach ($cmd in $commands) {
+    $counter++
+    $percentComplete = ($counter / $total) * 100
+
+    # Calculate the index for the animation frame
+    $animationIndex = ($counter - 1) % $beepBoopAnimations.Count
+    $activityText = $beepBoopAnimations[$animationIndex]
+
+    Write-Progress -Activity $activityText -Status " $($cmd.Verb) $($cmd.Description)... " -PercentComplete $percentComplete
+
     $startTime = Get-Date
     & $cmd.Command
     $endTime = Get-Date
+
     if ($enableLogging) {
         Log-Timing -section $cmd.Description -startTime $startTime -endTime $endTime
     }
 }
+
+# Reset progress bar style to default
+$PSStyle.Progress.View = $existingView
+
 
 # Uncomment the following line to enable default behaviour of clearing the terminal screen after the profile setup
 # clear
