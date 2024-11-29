@@ -106,6 +106,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `$PROFILE` | Path to the current profile script |
 | `sleep` | Pauses execution for a specified number of seconds |
 | `mklink` | Creates symbolic links |
+| `copilot-setup` | Configures GitHub Copilot CLI to use `ghcs` and `ghce` aliases |
 
 ## ⏱️ Timing and Logging
 
