@@ -9,11 +9,20 @@
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![Bash](https://img.shields.io/badge/Bash-4.0+-orange.svg)](https://www.gnu.org/software/bash/)
+[![Git](https://img.shields.io/badge/Git-2.0+-green.svg)](https://git-scm.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A collection of useful scripts I've created, or make use of.
 
 ## 📂 Available Scripts
+
+### Development Tools
+- [**git-config**](git-config/README.md) (PowerShell) - Automated Git configuration with productivity-focused defaults
+
+```powershell
+. .\git-config\git-config.ps1
+setup-git
+```
 
 ### Network Utilities
 - [**ForceConnectWiFi**](ForceConnectWifi/README.md) (PowerShell) - WiFi connection manager with retry capabilities
@@ -56,15 +65,35 @@ choco install packages.config
 
 ## 🚀 Getting Started
 
-1. Clone this repository
-2. Navigate to the script folder you need
-3. Check the README within each script folder for specific usage
+1. Clone this repository:
+
+```bash
+git clone https://github.com/ScottWilliamAnderson/scripts.git
+```
+
+2. Navigate to desired script folder:
+
+```bash
+cd scripts/<script-folder>
+```
+
+3. Check individual README files for detailed usage instructions
 
 ## 🛠️ Contributing
 
 1. Fork the repository
 2. Create your feature branch
-3. Submit a pull request
+3. Follow the [contribution guidelines](.github/CONTRIBUTING.md)
+4. Submit a pull request
+
+## 🔍 Requirements
+
+- Windows 10/11
+- PowerShell 5.1+
+- Git 2.0+
+- [Optional] Chocolatey package manager
+- [Optional] Oh My Posh
+- [Optional] GitHub CLI
 
 ## 📝 License
 
