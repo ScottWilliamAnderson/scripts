@@ -60,24 +60,21 @@ function copilot-setup {
         [switch]$Force
     )
 
-    # Run the command
-    gh copilot --version > $null
-
-    # Check the exit code
-    if ($LASTEXITCODE -eq 0) {
-        # If $GH_PROFILE is not set, set it to the default value
-        if (-not $GH_COPILOT_PROFILE) {
-            $GH_COPILOT_PROFILE = Join-Path -Path $(Split-Path -Path $PROFILE -Parent) -ChildPath "gh-copilot.ps1"
-        }
-        # If the profile does not exist or the force flag is set, create the profile
-        if ((-not (Test-Path $GH_COPILOT_PROFILE)) -or $Force) {
-            gh copilot alias -- pwsh | Out-File ( New-Item -Path $GH_COPILOT_PROFILE -Force )
-        }
-        . $GH_COPILOT_PROFILE
-
-    } else {
-        Write-Output "Github Copilot is not installed. Skipping setup."
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        Write-Output "Github Copilot is not installed. Skipping ghcs setup."
+        return
     }
+    
+    # If $GH_PROFILE is not set, set it to the default value
+    if (-not $GH_COPILOT_PROFILE) {
+        $GH_COPILOT_PROFILE = Join-Path -Path $(Split-Path -Path $PROFILE -Parent) -ChildPath "gh-copilot.ps1"
+    }
+    # If the profile does not exist or the force flag is set, create the profile
+    if ((-not (Test-Path $GH_COPILOT_PROFILE)) -or $Force) {
+        gh copilot alias -- pwsh | Out-File ( New-Item -Path $GH_COPILOT_PROFILE -Force )
+    }
+    . $GH_COPILOT_PROFILE
+    
 }
 
 # List of commands to run and their descriptions
