@@ -6,7 +6,7 @@
 
 A customized PowerShell profile with environment handling, package management, and productivity features.
 
-This guide will help you set up your PowerShell profile to import a custom profile script from this repository. 
+This guide will help you set up your PowerShell profile to import a custom profile script from this repository.
 
 ## 📌 Features
 
@@ -20,6 +20,8 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - 💤 Sleep function to pause execution
 - 🔗 Mklink function to create symbolic links
 - ⏱️ Timing and logging for performance measurement
+- 🤖 GitHub Copilot CLI integration
+- 💫 Animated loading indicators during profile initialization
 
 ## 🔍 Requirements
 
@@ -28,6 +30,10 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - Oh My Posh installed
 - Chocolatey installed
 - Posh-Git installed
+
+### Optional Requirements
+
+- GitHub CLI (`gh`) installed
 
 ## 🚀 Setup Instructions
 
@@ -100,6 +106,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `$PROFILE` | Path to the current profile script |
 | `sleep` | Pauses execution for a specified number of seconds |
 | `mklink` | Creates symbolic links |
+| `copilot-setup` | Configures GitHub Copilot CLI to use `ghcs` and `ghce` aliases |
 
 ## ⏱️ Timing and Logging
 
