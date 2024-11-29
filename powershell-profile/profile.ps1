@@ -77,11 +77,19 @@ function copilot-setup {
     
 }
 
+
+# Import the git config script
+. "$repoPath\git-config\git-config.ps1"
+
+
 # List of commands to run and their descriptions
 $commands = @(
     @{ Verb = "Importing";
        Description = "Chocolatey Profile";
        Command = { Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1 } },
+    @{ Verb = "Growing";
+       Description = "Git Config";
+       Command = { setup-git } },
     @{ Verb = "Charging";
        Description = "Posh-Git";
        Command = { Import-Module posh-git } },
