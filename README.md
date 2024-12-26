@@ -101,6 +101,7 @@ cd scripts/<script-folder>
 - [Optional] Chocolatey package manager
 - [Optional] Oh My Posh
 - [Optional] GitHub CLI
+- [Optional] AutoHotkey
 
 ## 📝 License
 
