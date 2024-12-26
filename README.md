@@ -67,7 +67,7 @@ choco install packages.config
 - [**vlc-autohotkey**](vlc-autohotkey/README.md) (AutoHotkey) - Quick speed controls for VLC
 ```powershell
 # Run the AHK script directly by double-clicking or:
-start "VLC Speed Controls" ".\vlc-autohotkey\vlc-speed-controls.ahk"
+start "VLC Speed Controls" ".\autohotkey\vlc-speed-controls.ahk"
 ```
 
 ## 🚀 Getting Started
