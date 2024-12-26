@@ -63,6 +63,13 @@ if (Test-Path $repoPath) {
 choco install packages.config
 ```
 
+### AutoHotkey Scripts
+- [**vlc-autohotkey**](vlc-autohotkey/README.md) (AutoHotkey) - Quick speed controls for VLC
+```powershell
+# Run the AHK script directly by double-clicking or:
+start "VLC Speed Controls" ".\vlc-autohotkey\vlc-speed-controls.ahk"
+```
+
 ## 🚀 Getting Started
 
 1. Clone this repository:
