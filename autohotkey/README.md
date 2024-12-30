@@ -49,7 +49,10 @@ Double-click vlc-speed-controls.ahk
 Or from PowerShell:
 
 ```powershell 
-Start-Process "vlc-speed-controls.ahk"
+.\vlc-speed-controls.ahk
+# If you have the updated `profile.ps1` with the `vlcs` function, simply type:
+vlcs
+# This will launch `vlc-speed-controls.ahk` automatically.
 ```
 
 ## 🎮 Usage

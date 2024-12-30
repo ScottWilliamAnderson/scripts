@@ -100,3 +100,17 @@ function mklink {
     )
     cmd /c mklink $args 
 }
+
+# Activate the vlc speedup autohotkey script
+function vlcs {
+    <#
+    .SYNOPSIS
+        Activates the VLC speedup autohotkey script.
+    .OUTPUTS
+        None
+    #>
+
+    Write-Host "Activating VLC speedup autohotkey script..."
+
+    . "$repoPath\autohotkey\vlc-speed-controls.ahk"
+}
