@@ -17,6 +17,7 @@ function setup-git {
             - p: Adds files interactively
             - undo: Undoes the last commit
             - fpush: Force pushes with lease
+            - publish: Pushes current branch with upstream setup
     #>
     # Check if git is installed
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -48,7 +49,10 @@ function setup-git {
         @{ Key = "alias.undo"; Value = "reset --soft HEAD~1" },
 
         # Force push with lease
-        @{ Key = "alias.fpush"; Value = "push --force-with-lease" }
+        @{ Key = "alias.fpush"; Value = "push --force-with-lease" },
+
+        # Push with setup upstream
+        @{ Key = "alias.publish"; Value = '!git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)' }
     )
 
     foreach ($setting in $settings) {
