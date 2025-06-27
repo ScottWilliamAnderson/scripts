@@ -20,6 +20,7 @@ Adds a `setup-git` function to configure Git with the following settings:
   - p: Interactive patch mode
   - undo: Undoes last commit
   - fpush: Force push with lease
+  - publish: Pushes current branch with upstream setup
 
 ## 🚀 Usage
 
@@ -42,6 +43,7 @@ setup-git
 | p | add --patch | Interactively stage changes |
 | undo | reset --soft HEAD~1 | Undoes last commit, preserving changes |
 | fpush | push --force-with-lease | Safer force push |
+| publish | !git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) | Pushes current branch with upstream setup |
 
 ## ⚙️ Requirements
 
