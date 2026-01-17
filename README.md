@@ -110,4 +110,4 @@ cd scripts/<script-folder>
 
 ## 📝 License
 
-MIT © Scott Anderson 2024
+MIT © Scott Anderson 2025
