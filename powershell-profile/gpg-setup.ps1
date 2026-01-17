@@ -1,6 +1,6 @@
 # GPG Agent Setup Script
 
-function Start-GpgAgent {
+function start-gpg-agent {
     <#
     .SYNOPSIS
         Starts the GPG agent if GPG signing is configured for git.

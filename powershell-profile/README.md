@@ -109,7 +109,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `sleep` | Pauses execution for a specified number of seconds |
 | `mklink` | Creates symbolic links |
 | `copilot-setup` | Configures GitHub Copilot CLI to use `ghcs` and `ghce` aliases |
-| `Start-GpgAgent` | Starts the GPG agent if GPG signing is configured |
+| `start-gpg-agent` | Starts the GPG agent if GPG signing is configured |
 | `vlcs`   | Quickly activates the VLC speedup AutoHotkey script (`vlc-speed-controls.ahk`) from anywhere |
 
 ## ⏱️ Timing and Logging
