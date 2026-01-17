@@ -107,6 +107,7 @@ cd scripts/<script-folder>
 - [Optional] Oh My Posh
 - [Optional] GitHub CLI
 - [Optional] AutoHotkey
+- [Optional] GnuPG (for GPG commit signing)
 
 ## 📝 License
 
