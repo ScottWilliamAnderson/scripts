@@ -23,6 +23,9 @@ if ($env:ENABLE_PROFILE_LOGGING -eq "true") {
 # Import the copilot-setup script
 . "$PSScriptRoot\copilot-setup.ps1"
 
+# Import the gpg-setup script
+. "$PSScriptRoot\gpg-setup.ps1"
+
 # Import the commands script
 . "$PSScriptRoot\commands.ps1"
 
