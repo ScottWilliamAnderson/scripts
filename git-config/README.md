@@ -31,6 +31,15 @@ Import and run the setup function:
 setup-git
 ```
 
+### Automatic Setup (Profile Integration)
+
+When using the PowerShell profile from this repository, `setup-git` runs automatically in the background during startup. A **sentinel file** (`.git-config-done`) is created after successful setup to avoid re-running on every startup.
+
+- The configuration is re-verified automatically every **7 days**
+- To force immediate re-configuration: `setup-git -Force`
+- To change the refresh interval, modify `$gitConfigRefreshDays` in `git-config.ps1`
+- To manually trigger a refresh, delete `.git-config-done` from the repository root
+
 ### Included Aliases & Configurations
 
 | Setting | Value | Description |

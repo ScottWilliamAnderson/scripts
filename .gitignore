@@ -9,3 +9,9 @@
 
 # Ignore backup files
 *.bak
+
+# Git config sentinel file (created by profile setup)
+.git-config-done
+
+# Profile timing log
+powershell-profile/profile_timing.log

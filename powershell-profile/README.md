@@ -11,18 +11,17 @@ This guide will help you set up your PowerShell profile to import a custom profi
 ## 📌 Features
 
 - 🔄 Git-based auto-update mechanism
-- 📦 Chocolatey integration
+- 📦 Chocolatey integration (lazy-loaded for faster startup)
 - 🎨 Oh My Posh theme support
-- 🌿 Posh-Git integration
+- 🌿 Posh-Git integration (background-loaded)
 - 🔑 Elevated privileges helper (sudo)
 - 🌍 Environment variable management
-- ⚡ Performance optimizations
+- ⚡ **Optimized startup** with background loading (~1s to prompt)
 - 💤 Sleep function to pause execution
 - 🔗 Mklink function to create symbolic links
 - ⏱️ Timing and logging for performance measurement
 - 🤖 GitHub Copilot CLI integration
 - 🔐 GPG agent auto-start for commit signing
-- 💫 Animated loading indicators during profile initialization
 
 ## 🔍 Requirements
 
@@ -111,6 +110,27 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `copilot-setup` | Configures GitHub Copilot CLI to use `ghcs` and `ghce` aliases |
 | `start-gpg-agent` | Starts the GPG agent if GPG signing is configured |
 | `vlcs`   | Quickly activates the VLC speedup AutoHotkey script (`vlc-speed-controls.ahk`) from anywhere |
+
+## ⏱️ Startup Performance
+
+The profile is optimized for fast startup using a multi-phase loading approach:
+
+| Phase | What Loads | Blocking? | Time |
+|-------|------------|-----------|------|
+| 1. Blocking | Oh-My-Posh, GitHub Copilot | Yes | ~500-700ms |
+| 2. Background | Git config, GPG agent, Posh-Git | No | ~1-2s |
+| 3. Lazy | Chocolatey (on first `refreshenv`) | No | ~250ms |
+
+**Result:** Prompt appears in ~1-1.3s, full features available after ~2s.
+
+
+### Git Config Sentinel
+
+The git configuration (`setup-git`) uses a sentinel file to avoid re-running every startup:
+
+- **Location:** `.git-config-done` in the repository root
+- **Refresh interval:** Every 7 days (configurable via `$gitConfigRefreshDays`)
+- **Force refresh:** Run `setup-git -Force` or delete the sentinel file
 
 ## ⏱️ Timing and Logging
 

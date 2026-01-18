@@ -1,7 +1,12 @@
+# How often to re-verify git config (in days). Adjust this value if needed.
+$script:gitConfigRefreshDays = 7
+
 function setup-git {
     <#
     .SYNOPSIS
         Configures Git with useful defaults and aliases.
+    .PARAMETER Force
+        Forces re-configuration even if the sentinel file exists.
     .OUTPUTS
         None
     .NOTES
@@ -18,11 +23,31 @@ function setup-git {
             - undo: Undoes the last commit
             - fpush: Force pushes with lease
             - publish: Pushes current branch with upstream setup
+
+        A sentinel file (.git-config-done) is created after successful setup.
+        The config is re-verified after $gitConfigRefreshDays days (default: 7).
+        Delete the sentinel file or use -Force to re-run immediately.
     #>
+    param (
+        [switch]$Force
+    )
+
     # Check if git is installed
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Write-Host "Git is not installed. Skipping git setup."
         return
+    }
+
+    # Sentinel file to track if git config has been set up
+    $sentinelPath = [System.IO.Path]::Combine($repoPath, ".git-config-done")
+
+    # Skip if recently configured (unless -Force is specified)
+    if (-not $Force -and [System.IO.File]::Exists($sentinelPath)) {
+        $age = ([DateTime]::Now) - [System.IO.File]::GetLastWriteTime($sentinelPath)
+        if ($age.TotalDays -lt $script:gitConfigRefreshDays) {
+            Write-Verbose "Git config already set up (sentinel age: $([math]::Round($age.TotalDays, 1)) days)"
+            return
+        }
     }
 
     $settings = @(
@@ -62,4 +87,7 @@ function setup-git {
         }
     }
 
+    # Update sentinel file with current timestamp
+    [System.IO.File]::WriteAllText($sentinelPath, ([DateTime]::Now).ToString("o"))
+    Write-Verbose "Git config setup complete. Sentinel file updated: $sentinelPath"
 }
