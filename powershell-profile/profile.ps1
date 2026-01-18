@@ -20,7 +20,7 @@ $t1 = [DateTime]::Now
 if ($enableLogging) { Log-Timing -section "Import logging.ps1" -startTime $t1 -endTime ([DateTime]::Now) }
 
 # Check PSReadLine history file size (large files can cause 30+ second startup delays)
-$historyPath = [System.IO.Path]::Combine($env:APPDATA, "Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt")
+$historyPath = [System.IO.Path]::Combine($env:APPDATA, "Microsoft", "Windows", "PowerShell", "PSReadLine", "ConsoleHost_history.txt")
 if ([System.IO.File]::Exists($historyPath)) {
     $historySize = (New-Object System.IO.FileInfo $historyPath).Length
     $historySizeMB = [math]::Round($historySize / 1MB, 1)

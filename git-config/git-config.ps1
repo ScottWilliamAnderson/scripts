@@ -43,7 +43,7 @@ function setup-git {
 
     # Skip if recently configured (unless -Force is specified)
     if (-not $Force -and [System.IO.File]::Exists($sentinelPath)) {
-        $age = ([DateTime]::Now) - (Get-Item $sentinelPath).LastWriteTime
+        $age = ([DateTime]::Now) - [System.IO.File]::GetLastWriteTime($sentinelPath)
         if ($age.TotalDays -lt $script:gitConfigRefreshDays) {
             Write-Verbose "Git config already set up (sentinel age: $([math]::Round($age.TotalDays, 1)) days)"
             return

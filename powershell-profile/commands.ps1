@@ -10,13 +10,11 @@ $global:PoshGitLoaded = $false
 # Record start time for logging
 $script:profileStartTime = [DateTime]::Now
 
-# ============================================================================
 # PHASE 1: Blocking operations (must complete before prompt appears)
-# ============================================================================
 
-# Oh-My-Posh Theme - This MUST load before the prompt appears
+# Oh-My-Posh Theme - must load before the prompt appears
 $ompStartTime = [DateTime]::Now
-$ompConfigPath = [System.IO.Path]::Combine($repoPath, "oh-my-posh\plenty-of-info.omp.json")
+$ompConfigPath = [System.IO.Path]::Combine($repoPath, "oh-my-posh", "plenty-of-info.omp.json")
 oh-my-posh init pwsh --config $ompConfigPath | Invoke-Expression
 $ompEndTime = [DateTime]::Now
 
@@ -24,7 +22,7 @@ if ($enableLogging) {
     Log-Timing -section "Oh-My-Posh Theme (blocking)" -startTime $ompStartTime -endTime $ompEndTime
 }
 
-# GitHub Copilot - must load in global scope, so do it here (~50ms)
+# GitHub Copilot
 $copilotStartTime = [DateTime]::Now
 $ghCopilotProfile = [System.IO.Path]::Combine((Split-Path -Path $PROFILE -Parent), "gh-copilot.ps1")
 if ([System.IO.File]::Exists($ghCopilotProfile)) {
@@ -34,9 +32,7 @@ if ($enableLogging) {
     Log-Timing -section "GitHub Copilot (blocking)" -startTime $copilotStartTime -endTime ([DateTime]::Now)
 }
 
-# ============================================================================
 # PHASE 2: Lazy-loaded Chocolatey (only loads when refreshenv is called)
-# ============================================================================
 
 function global:refreshenv {
     <#
@@ -46,7 +42,7 @@ function global:refreshenv {
     $chocoStartTime = [DateTime]::Now
     
     # Import the actual Chocolatey profile
-    $chocoProfilePath = [System.IO.Path]::Combine($env:ChocolateyInstall, "helpers\chocolateyProfile.psm1")
+    $chocoProfilePath = [System.IO.Path]::Combine($env:ChocolateyInstall, "helpers", "chocolateyProfile.psm1")
     Import-Module $chocoProfilePath -Global
     
     if ($enableLogging) {
@@ -60,9 +56,7 @@ function global:refreshenv {
     Update-SessionEnvironment
 }
 
-# ============================================================================
 # PHASE 3: Background loading (runs after prompt appears)
-# ============================================================================
 
 # Check if ThreadJob module is available (built into PS 7+)
 $useBackgroundLoading = $null -ne (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)
@@ -78,7 +72,7 @@ if ($useBackgroundLoading) {
         # Git Config (this writes to global git config, so it works from background)
         $startTime = [DateTime]::Now
         try {
-            $gitConfigPath = [System.IO.Path]::Combine($repoPath, "git-config\git-config.ps1")
+            $gitConfigPath = [System.IO.Path]::Combine($repoPath, "git-config", "git-config.ps1")
             . $gitConfigPath
             setup-git
             $results["git-config"] = @{ Success = $true; Duration = (([DateTime]::Now) - $startTime).TotalMilliseconds }
@@ -89,9 +83,9 @@ if ($useBackgroundLoading) {
         # GPG Agent (starts external process, works from background)
         $startTime = [DateTime]::Now
         try {
-            $gpgSetupPath = [System.IO.Path]::Combine($repoPath, "powershell-profile\gpg-setup.ps1")
+            $gpgSetupPath = [System.IO.Path]::Combine($repoPath, "powershell-profile", "gpg-setup.ps1")
             . $gpgSetupPath
-            Start-GpgAgent
+            start-gpg-agent
             $results["gpg-agent"] = @{ Success = $true; Duration = (([DateTime]::Now) - $startTime).TotalMilliseconds }
         } catch {
             $results["gpg-agent"] = @{ Success = $false; Error = $_.Exception.Message }
@@ -147,9 +141,9 @@ if ($useBackgroundLoading) {
     $global:PoshGitLoaded = $true
     if ($enableLogging) { Log-Timing -section "Posh-Git" -startTime $startTime -endTime ([DateTime]::Now) }
     
-    # GPG Agent (Start-GpgAgent is defined in gpg-setup.ps1, already sourced in profile.ps1)
+    # GPG Agent (start-gpg-agent is defined in gpg-setup.ps1, already sourced in profile.ps1)
     $startTime = [DateTime]::Now
-    Start-GpgAgent
+    start-gpg-agent
     if ($enableLogging) { Log-Timing -section "GPG Agent" -startTime $startTime -endTime ([DateTime]::Now) }
     
     # Mark loading complete

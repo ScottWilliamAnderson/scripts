@@ -16,13 +16,12 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - 🌿 Posh-Git integration (background-loaded)
 - 🔑 Elevated privileges helper (sudo)
 - 🌍 Environment variable management
-- ⚡ **Optimized startup** with background loading (~500ms to prompt)
+- ⚡ **Optimized startup** with background loading (~1s to prompt)
 - 💤 Sleep function to pause execution
 - 🔗 Mklink function to create symbolic links
 - ⏱️ Timing and logging for performance measurement
 - 🤖 GitHub Copilot CLI integration
 - 🔐 GPG agent auto-start for commit signing
-- ⏳ Loading indicator in prompt during background initialization
 
 ## 🔍 Requirements
 
@@ -118,11 +117,11 @@ The profile is optimized for fast startup using a multi-phase loading approach:
 
 | Phase | What Loads | Blocking? | Time |
 |-------|------------|-----------|------|
-| 1. Oh-My-Posh | Theme and prompt | Yes | ~500ms |
-| 2. Background | Posh-Git, Git config, Copilot, GPG | No | ~1-2s |
+| 1. Blocking | Oh-My-Posh, GitHub Copilot | Yes | ~500-700ms |
+| 2. Background | Git config, GPG agent, Posh-Git | No | ~1-2s |
 | 3. Lazy | Chocolatey (on first `refreshenv`) | No | ~250ms |
 
-**Result:** Prompt appears in ~500ms, full features available after ~2s.
+**Result:** Prompt appears in ~1-1.3s, full features available after ~2s.
 
 A loading indicator (hourglass) appears in the prompt while background loading is in progress.
 
