@@ -123,7 +123,6 @@ The profile is optimized for fast startup using a multi-phase loading approach:
 
 **Result:** Prompt appears in ~1-1.3s, full features available after ~2s.
 
-A loading indicator (hourglass) appears in the prompt while background loading is in progress.
 
 ### Git Config Sentinel
 
