@@ -136,17 +136,37 @@ return
 
 ## Commit Message Guidelines
 
-- **Subject line:** 50 characters max, capitalized, imperative mood, no period
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) style.
+
+### Format
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+```
+
+- **Subject line:** 50 characters max, lowercase, imperative mood, no period
 - **Body:** Wrap at 72 characters, explain "why" not "how"
+- **Scope:** Optional, indicates the area of the codebase (e.g., `autohotkey`, `profile`, `git-config`)
 
-### Common Prefixes
+### Types
 
-- `Add` - New feature or script
-- `Fix` - Bug fix
-- `Update` - Enhancement to existing feature
-- `Remove` - Removing code or features
-- `Refactor` - Code restructuring without behavior change
-- `Docs` - Documentation only changes
+- `feat` - New feature or script
+- `fix` - Bug fix
+- `docs` - Documentation only changes
+- `refactor` - Code restructuring without behavior change
+- `chore` - Maintenance tasks, dependencies, configs
+
+### Commit Strategy
+
+- **Prefer small, targeted commits** over large feature commits
+- Each commit should represent a single logical change
+- When adding a feature, consider separate commits for:
+  - The core implementation
+  - Documentation updates
+  - README updates
+- Use `git add -p` to stage hunks when a file contains multiple logical changes
 
 ## Adding New Scripts
 
