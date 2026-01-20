@@ -64,15 +64,14 @@ choco install packages.config
 ```
 
 ### AutoHotkey Scripts
-- [**vlc-autohotkey**](autohotkey/README.md) (AutoHotkey) - Quick speed controls for VLC
-```powershell
-# Manually:
-cd .\autohotkey\
-.\vlc-speed-controls.ahk
+- [**AutoHotkey Scripts**](autohotkey/README.md) (AutoHotkey) - Keyboard and mouse automation scripts
+  - **MinecraftHotbarScroll** - Use mouse side buttons to scroll the hotbar
+  - **vlc-speed-controls** - Quick speed controls for VLC (hold number keys for fast playback)
 
-# via PowerShell alias/function:
-vlcs
-# Instantly launches the script thanks to a function in profile.ps1
+```powershell
+# Double-click any .ahk file to run, or from PowerShell:
+.\autohotkey\MinecraftHotbarScroll.ahk
+.\autohotkey\vlc-speed-controls.ahk
 ```
 
 ## 🚀 Getting Started
