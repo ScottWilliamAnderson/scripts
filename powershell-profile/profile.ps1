@@ -155,6 +155,9 @@ function notify {
     .PARAMETER Sound
         Notification sound. Common values: Default, IM, Mail, Reminder, SMS, Alarm, 
         Alarm2-10, Call, Call2-10. Custom values are also accepted.
+        Cannot be used with -Silent.
+    .PARAMETER Silent
+        Makes the notification silent (no sound). Cannot be used with -Sound.
     .PARAMETER Urgent
         Mark the notification as important/urgent.
     .PARAMETER Image
@@ -165,6 +168,8 @@ function notify {
         notify "Build complete!" -Title "npm build"
     .EXAMPLE
         notify "Deployment finished" -Title "Deploy" -Sound Alarm -Urgent
+    .EXAMPLE
+        notify "Background task done" -Silent
     .EXAMPLE
         npm run build && notify "Build succeeded!" -Title "npm" || notify "Build FAILED!" -Title "npm" -Urgent -Sound Alarm
     .OUTPUTS
@@ -189,6 +194,9 @@ function notify {
         [string]$Sound,
 
         [Parameter(Mandatory = $false)]
+        [switch]$Silent,
+
+        [Parameter(Mandatory = $false)]
         [switch]$Urgent,
 
         [Parameter(Mandatory = $false)]
@@ -206,6 +214,12 @@ function notify {
         Import-Module BurntToast -ErrorAction Stop
     }
 
+    # Validate mutually exclusive parameters
+    if ($Sound -and $Silent) {
+        Write-Error "Cannot use both -Sound and -Silent. Choose one or the other."
+        return
+    }
+
     # Build parameters hashtable
     $params = @{
         Text = $Message
@@ -217,6 +231,10 @@ function notify {
 
     if ($Sound) {
         $params.Sound = $Sound
+    }
+
+    if ($Silent) {
+        $params.Silent = $true
     }
 
     if ($Urgent) {
@@ -247,6 +265,8 @@ function remind-me {
         Time delay before showing the notification (e.g., 5s, 5m, 1h, 30s).
     .PARAMETER Message
         The reminder message to display.
+    .PARAMETER SnoozeAndDismiss
+        Adds snooze and dismiss buttons to the reminder notification.
     .EXAMPLE
         remind-me 5m "Take a break"
     .EXAMPLE
@@ -255,6 +275,8 @@ function remind-me {
         remind-me 30s "Timer done"
     .EXAMPLE
         remind-me 25m "Pomodoro break"
+    .EXAMPLE
+        remind-me 25m "Pomodoro break" -SnoozeAndDismiss
     .OUTPUTS
         None
     #>
@@ -267,7 +289,10 @@ function remind-me {
 
         [Parameter(Mandatory = $true, Position = 1, HelpMessage = "Reminder message")]
         [ValidateNotNullOrEmpty()]
-        [string]$Message
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$SnoozeAndDismiss
     )
 
     # Check if BurntToast module is available before starting the timer
@@ -296,7 +321,7 @@ function remind-me {
 
     # Script block for the reminder job
     $reminderScript = {
-        param($seconds, $message)
+        param($seconds, $message, $snoozeAndDismiss)
         
         Start-Sleep -Seconds $seconds
         
@@ -310,7 +335,15 @@ function remind-me {
         }
         
         try {
-            New-BurntToastNotification -Text "Reminder", $message -Sound Reminder -ErrorAction Stop
+            $params = @{
+                Text = "Reminder", $message
+                Sound = "Reminder"
+                ErrorAction = "Stop"
+            }
+            if ($snoozeAndDismiss) {
+                $params.SnoozeAndDismiss = $true
+            }
+            New-BurntToastNotification @params
         }
         catch {
             Write-Error "Failed to send reminder notification: $($_.Exception.Message)"
@@ -319,7 +352,7 @@ function remind-me {
 
     # Use Start-ThreadJob if available (auto-cleans up), otherwise fall back to Start-Job
     if (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue) {
-        $job = Start-ThreadJob -ScriptBlock $reminderScript -ArgumentList $seconds, $Message
+        $job = Start-ThreadJob -ScriptBlock $reminderScript -ArgumentList $seconds, $Message, $SnoozeAndDismiss.IsPresent
         
         # Register cleanup event for when the job completes
         $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
@@ -331,7 +364,7 @@ function remind-me {
     }
     else {
         # Fallback to Start-Job with cleanup after completion
-        $job = Start-Job -ScriptBlock $reminderScript -ArgumentList $seconds, $Message
+        $job = Start-Job -ScriptBlock $reminderScript -ArgumentList $seconds, $Message, $SnoozeAndDismiss.IsPresent
         
         # Register cleanup event for when the job completes
         $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
