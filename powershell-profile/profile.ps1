@@ -153,7 +153,8 @@ function notify {
     .PARAMETER Title
         Optional notification title.
     .PARAMETER Sound
-        Notification sound (pass-through to BurntToast).
+        Notification sound. Common values: Default, IM, Mail, Reminder, SMS, Alarm, 
+        Alarm2-10, Call, Call2-10. Custom values are also accepted.
     .PARAMETER Urgent
         Mark the notification as important/urgent.
     .PARAMETER Image
@@ -179,6 +180,12 @@ function notify {
         [string]$Title,
 
         [Parameter(Mandatory = $false)]
+        [ArgumentCompleter({
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+            @('Default', 'IM', 'Mail', 'Reminder', 'SMS', 'Alarm', 'Alarm2', 'Alarm3', 'Alarm4', 'Alarm5',
+              'Alarm6', 'Alarm7', 'Alarm8', 'Alarm9', 'Alarm10', 'Call', 'Call2', 'Call3', 'Call4', 'Call5',
+              'Call6', 'Call7', 'Call8', 'Call9', 'Call10') | Where-Object { $_ -like "$wordToComplete*" }
+        })]
         [string]$Sound,
 
         [Parameter(Mandatory = $false)]
@@ -190,7 +197,7 @@ function notify {
 
     # Check if BurntToast module is available
     if (-not (Get-Module -ListAvailable -Name BurntToast)) {
-        Write-Error "BurntToast module is not installed. Install it with: choco install burnttoast-psmodule"
+        Write-Error "BurntToast module is not installed. Install it with: Install-Module -Name BurntToast -Scope CurrentUser"
         return
     }
 
@@ -213,7 +220,7 @@ function notify {
     }
 
     if ($Urgent) {
-        $params.SnoozeAndDismiss = $true
+        $params.Urgent = $true
     }
 
     if ($Image) {
@@ -263,20 +270,23 @@ function remind-me {
         [string]$Message
     )
 
-    # Parse the delay string
-    if ($Delay -match '^(\d+)(s|m|h)$') {
-        $value = [int]$Matches[1]
-        $unit = $Matches[2]
-
-        $seconds = switch ($unit) {
-            's' { $value }
-            'm' { $value * 60 }
-            'h' { $value * 3600 }
-        }
-    }
-    else {
-        Write-Error "Invalid delay format. Use format like: 5s, 5m, 1h"
+    # Check if BurntToast module is available before starting the timer
+    if (-not (Get-Module -ListAvailable -Name BurntToast)) {
+        Write-Error "BurntToast module is not installed. Install it with: Install-Module -Name BurntToast -Scope CurrentUser"
         return
+    }
+
+    # ValidatePattern ensures this match always succeeds;
+    # we run it here only to populate the $Matches automatic variable.
+    $null = $Delay -match '^(\d+)(s|m|h)$'
+
+    $value = [int]$Matches[1]
+    $unit = $Matches[2]
+
+    $seconds = switch ($unit) {
+        's' { $value }
+        'm' { $value * 60 }
+        'h' { $value * 3600 }
     }
 
     # Calculate the reminder time for display
@@ -284,15 +294,51 @@ function remind-me {
 
     Write-Host "Reminder set for $reminderTime ($Delay from now): $Message"
 
-    # Start a background job to wait and then show the notification
-    $null = Start-Job -ScriptBlock {
+    # Script block for the reminder job
+    $reminderScript = {
         param($seconds, $message)
         
         Start-Sleep -Seconds $seconds
         
-        # Import BurntToast in the job context
-        Import-Module BurntToast -ErrorAction SilentlyContinue
+        # Import BurntToast in the job context with error handling
+        try {
+            Import-Module BurntToast -ErrorAction Stop
+        }
+        catch {
+            Write-Error "Failed to import BurntToast module in reminder job: $($_.Exception.Message)"
+            return
+        }
         
-        New-BurntToastNotification -Text "Reminder", $message -Sound Reminder
-    } -ArgumentList $seconds, $Message
+        try {
+            New-BurntToastNotification -Text "Reminder", $message -Sound Reminder -ErrorAction Stop
+        }
+        catch {
+            Write-Error "Failed to send reminder notification: $($_.Exception.Message)"
+        }
+    }
+
+    # Use Start-ThreadJob if available (auto-cleans up), otherwise fall back to Start-Job
+    if (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue) {
+        $job = Start-ThreadJob -ScriptBlock $reminderScript -ArgumentList $seconds, $Message
+        
+        # Register cleanup event for when the job completes
+        $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
+            if ($Event.Sender.State -in @("Completed", "Failed", "Stopped")) {
+                Remove-Job -Job $Event.Sender -Force -ErrorAction SilentlyContinue
+                Unregister-Event -SubscriptionId $EventSubscriber.SubscriptionId -ErrorAction SilentlyContinue
+            }
+        } -SupportEvent
+    }
+    else {
+        # Fallback to Start-Job with cleanup after completion
+        $job = Start-Job -ScriptBlock $reminderScript -ArgumentList $seconds, $Message
+        
+        # Register cleanup event for when the job completes
+        $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
+            if ($Event.Sender.State -in @("Completed", "Failed", "Stopped")) {
+                Remove-Job -Job $Event.Sender -Force -ErrorAction SilentlyContinue
+                Unregister-Event -SubscriptionId $EventSubscriber.SubscriptionId -ErrorAction SilentlyContinue
+            }
+        } -SupportEvent
+    }
 }
