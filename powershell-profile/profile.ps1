@@ -139,3 +139,91 @@ function vlcs {
 
     . "$repoPath\autohotkey\vlc-speed-controls.ahk"
 }
+
+# Toast notification using BurntToast
+function notify {
+    <#
+    .SYNOPSIS
+        Displays a Windows toast notification using BurntToast.
+    .DESCRIPTION
+        A simple wrapper around New-BurntToastNotification for quick notifications.
+        Useful for alerting when long-running scripts complete.
+    .PARAMETER Message
+        The notification body text.
+    .PARAMETER Title
+        Optional notification title.
+    .PARAMETER Sound
+        Notification sound (pass-through to BurntToast).
+    .PARAMETER Urgent
+        Mark the notification as important/urgent.
+    .PARAMETER Image
+        Custom icon/image path for the notification.
+    .EXAMPLE
+        notify "Build complete!"
+    .EXAMPLE
+        notify "Build complete!" -Title "npm build"
+    .EXAMPLE
+        notify "Deployment finished" -Title "Deploy" -Sound Alarm -Urgent
+    .EXAMPLE
+        npm run build && notify "Build succeeded!" -Title "npm" || notify "Build FAILED!" -Title "npm" -Urgent -Sound Alarm
+    .OUTPUTS
+        None
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Notification body text")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Sound,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Urgent,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Image
+    )
+
+    # Check if BurntToast module is available
+    if (-not (Get-Module -ListAvailable -Name BurntToast)) {
+        Write-Error "BurntToast module is not installed. Install it with: choco install burnttoast-psmodule"
+        return
+    }
+
+    # Import BurntToast if not already loaded
+    if (-not (Get-Module -Name BurntToast)) {
+        Import-Module BurntToast -ErrorAction Stop
+    }
+
+    # Build parameters hashtable
+    $params = @{
+        Text = $Message
+    }
+
+    if ($Title) {
+        $params.Text = $Title, $Message
+    }
+
+    if ($Sound) {
+        $params.Sound = $Sound
+    }
+
+    if ($Urgent) {
+        $params.SnoozeAndDismiss = $true
+    }
+
+    if ($Image) {
+        $params.AppLogo = $Image
+    }
+
+    try {
+        New-BurntToastNotification @params
+    }
+    catch {
+        Write-Error "Failed to send notification: $_"
+    }
+}
