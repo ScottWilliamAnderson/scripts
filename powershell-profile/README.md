@@ -31,7 +31,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - Oh My Posh installed
 - Chocolatey installed
 - Posh-Git installed
-- BurntToast installed (for toast notifications)
+- [BurntToast](https://github.com/Windos/BurntToast) installed
 
 ### Optional Requirements
 
