@@ -227,3 +227,72 @@ function notify {
         Write-Error "Failed to send notification: $_"
     }
 }
+
+# Timer-based reminder notification
+function remind-me {
+    <#
+    .SYNOPSIS
+        Sets a timer-based reminder that sends a toast notification after a delay.
+    .DESCRIPTION
+        Schedules a reminder notification after a specified time delay.
+        Supports time formats like 5s (seconds), 5m (minutes), 1h (hours).
+    .PARAMETER Delay
+        Time delay before showing the notification (e.g., 5s, 5m, 1h, 30s).
+    .PARAMETER Message
+        The reminder message to display.
+    .EXAMPLE
+        remind-me 5m "Take a break"
+    .EXAMPLE
+        remind-me 1h "Check on deployment"
+    .EXAMPLE
+        remind-me 30s "Timer done"
+    .EXAMPLE
+        remind-me 25m "Pomodoro break"
+    .OUTPUTS
+        None
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Time delay (e.g., 5s, 5m, 1h)")]
+        [ValidateNotNullOrEmpty()]
+        [ValidatePattern('^(\d+)(s|m|h)$')]
+        [string]$Delay,
+
+        [Parameter(Mandatory = $true, Position = 1, HelpMessage = "Reminder message")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Message
+    )
+
+    # Parse the delay string
+    if ($Delay -match '^(\d+)(s|m|h)$') {
+        $value = [int]$Matches[1]
+        $unit = $Matches[2]
+
+        $seconds = switch ($unit) {
+            's' { $value }
+            'm' { $value * 60 }
+            'h' { $value * 3600 }
+        }
+    }
+    else {
+        Write-Error "Invalid delay format. Use format like: 5s, 5m, 1h"
+        return
+    }
+
+    # Calculate the reminder time for display
+    $reminderTime = (Get-Date).AddSeconds($seconds).ToString("HH:mm:ss")
+
+    Write-Host "Reminder set for $reminderTime ($Delay from now): $Message"
+
+    # Start a background job to wait and then show the notification
+    $null = Start-Job -ScriptBlock {
+        param($seconds, $message)
+        
+        Start-Sleep -Seconds $seconds
+        
+        # Import BurntToast in the job context
+        Import-Module BurntToast -ErrorAction SilentlyContinue
+        
+        New-BurntToastNotification -Text "Reminder", $message -Sound Reminder
+    } -ArgumentList $seconds, $Message
+}
