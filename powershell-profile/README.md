@@ -22,6 +22,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - ⏱️ Timing and logging for performance measurement
 - 🤖 GitHub Copilot CLI integration
 - 🔐 GPG agent auto-start for commit signing
+- 🔔 Toast notifications with BurntToast (`notify` and `remind-me`)
 
 ## 🔍 Requirements
 
@@ -30,6 +31,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 - Oh My Posh installed
 - Chocolatey installed
 - Posh-Git installed
+- [BurntToast](https://github.com/Windos/BurntToast) installed
 
 ### Optional Requirements
 
@@ -110,6 +112,8 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `copilot-setup` | Configures GitHub Copilot CLI to use `ghcs` and `ghce` aliases |
 | `start-gpg-agent` | Starts the GPG agent if GPG signing is configured |
 | `vlcs`   | Quickly activates the VLC speedup AutoHotkey script (`vlc-speed-controls.ahk`) from anywhere |
+| `notify` | Displays a Windows toast notification using BurntToast |
+| `remind-me` | Sets a timer-based reminder notification (e.g., `remind-me 5m "Take a break"`) |
 
 ## ⏱️ Startup Performance
 

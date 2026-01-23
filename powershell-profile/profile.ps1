@@ -139,3 +139,239 @@ function vlcs {
 
     . "$repoPath\autohotkey\vlc-speed-controls.ahk"
 }
+
+# Toast notification using BurntToast
+function notify {
+    <#
+    .SYNOPSIS
+        Displays a Windows toast notification using BurntToast.
+    .DESCRIPTION
+        A simple wrapper around New-BurntToastNotification for quick notifications.
+        Useful for alerting when long-running scripts complete.
+    .PARAMETER Message
+        The notification body text.
+    .PARAMETER Title
+        Optional notification title.
+    .PARAMETER Sound
+        Notification sound. Common values: Default, IM, Mail, Reminder, SMS, Alarm, 
+        Alarm2-10, Call, Call2-10. Custom values are also accepted.
+        Cannot be used with -Silent.
+    .PARAMETER Silent
+        Makes the notification silent (no sound). Cannot be used with -Sound.
+    .PARAMETER Urgent
+        Mark the notification as important/urgent.
+    .PARAMETER Image
+        Custom icon/image path for the notification.
+    .EXAMPLE
+        notify "Build complete!"
+    .EXAMPLE
+        notify "Build complete!" -Title "npm build"
+    .EXAMPLE
+        notify "Deployment finished" -Title "Deploy" -Sound Alarm -Urgent
+    .EXAMPLE
+        notify "Background task done" -Silent
+    .EXAMPLE
+        npm run build && notify "Build succeeded!" -Title "npm" || notify "Build FAILED!" -Title "npm" -Urgent -Sound Alarm
+    .OUTPUTS
+        None
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Notification body text")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $false)]
+        [ArgumentCompleter({
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+            @('Default', 'IM', 'Mail', 'Reminder', 'SMS', 'Alarm', 'Alarm2', 'Alarm3', 'Alarm4', 'Alarm5',
+              'Alarm6', 'Alarm7', 'Alarm8', 'Alarm9', 'Alarm10', 'Call', 'Call2', 'Call3', 'Call4', 'Call5',
+              'Call6', 'Call7', 'Call8', 'Call9', 'Call10') | Where-Object { $_ -like "$wordToComplete*" }
+        })]
+        [string]$Sound,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Silent,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Urgent,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Image
+    )
+
+    # Check if BurntToast module is available
+    if (-not (Get-Module -ListAvailable -Name BurntToast)) {
+        Write-Error "BurntToast module is not installed. Install it with: Install-Module -Name BurntToast -Scope CurrentUser"
+        return
+    }
+
+    # Import BurntToast if not already loaded
+    if (-not (Get-Module -Name BurntToast)) {
+        Import-Module BurntToast -ErrorAction Stop
+    }
+
+    # Validate mutually exclusive parameters
+    if ($Sound -and $Silent) {
+        Write-Error "Cannot use both -Sound and -Silent. Choose one or the other."
+        return
+    }
+
+    # Build parameters hashtable
+    $params = @{
+        Text = $Message
+    }
+
+    if ($Title) {
+        $params.Text = $Title, $Message
+    }
+
+    if ($Sound) {
+        $params.Sound = $Sound
+    }
+
+    if ($Silent) {
+        $params.Silent = $true
+    }
+
+    if ($Urgent) {
+        $params.Urgent = $true
+    }
+
+    if ($Image) {
+        $params.AppLogo = $Image
+    }
+
+    try {
+        New-BurntToastNotification @params
+    }
+    catch {
+        Write-Error "Failed to send notification: $_"
+    }
+}
+
+# Timer-based reminder notification
+function remind-me {
+    <#
+    .SYNOPSIS
+        Sets a timer-based reminder that sends a toast notification after a delay.
+    .DESCRIPTION
+        Schedules a reminder notification after a specified time delay.
+        Supports time formats like 5s (seconds), 5m (minutes), 1h (hours).
+    .PARAMETER Delay
+        Time delay before showing the notification (e.g., 5s, 5m, 1h, 30s).
+    .PARAMETER Message
+        The reminder message to display.
+    .PARAMETER SnoozeAndDismiss
+        Adds snooze and dismiss buttons to the reminder notification.
+    .EXAMPLE
+        remind-me 5m "Take a break"
+    .EXAMPLE
+        remind-me 1h "Check on deployment"
+    .EXAMPLE
+        remind-me 30s "Timer done"
+    .EXAMPLE
+        remind-me 25m "Pomodoro break"
+    .EXAMPLE
+        remind-me 25m "Pomodoro break" -SnoozeAndDismiss
+    .OUTPUTS
+        None
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "Time delay (e.g., 5s, 5m, 1h)")]
+        [ValidateNotNullOrEmpty()]
+        [ValidatePattern('^(\d+)(s|m|h)$')]
+        [string]$Delay,
+
+        [Parameter(Mandatory = $true, Position = 1, HelpMessage = "Reminder message")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$SnoozeAndDismiss
+    )
+
+    # Check if BurntToast module is available before starting the timer
+    if (-not (Get-Module -ListAvailable -Name BurntToast)) {
+        Write-Error "BurntToast module is not installed. Install it with: Install-Module -Name BurntToast -Scope CurrentUser"
+        return
+    }
+
+    # ValidatePattern ensures this match always succeeds;
+    # we run it here only to populate the $Matches automatic variable.
+    $null = $Delay -match '^(\d+)(s|m|h)$'
+
+    $value = [int]$Matches[1]
+    $unit = $Matches[2]
+
+    $seconds = switch ($unit) {
+        's' { $value }
+        'm' { $value * 60 }
+        'h' { $value * 3600 }
+    }
+
+    # Calculate the reminder time for display
+    $reminderTime = (Get-Date).AddSeconds($seconds).ToString("HH:mm:ss")
+
+    Write-Host "Reminder set for $reminderTime ($Delay from now): $Message"
+
+    # Script block for the reminder job
+    $reminderScript = {
+        param($seconds, $message, $snoozeAndDismiss)
+        
+        Start-Sleep -Seconds $seconds
+        
+        # Import BurntToast in the job context with error handling
+        try {
+            Import-Module BurntToast -ErrorAction Stop
+        }
+        catch {
+            Write-Error "Failed to import BurntToast module in reminder job: $($_.Exception.Message)"
+            return
+        }
+        
+        try {
+            $params = @{
+                Text = "Reminder", $message
+                Sound = "Reminder"
+                ErrorAction = "Stop"
+            }
+            if ($snoozeAndDismiss) {
+                $params.SnoozeAndDismiss = $true
+            }
+            New-BurntToastNotification @params
+        }
+        catch {
+            Write-Error "Failed to send reminder notification: $($_.Exception.Message)"
+        }
+    }
+
+    # Use Start-ThreadJob if available (auto-cleans up), otherwise fall back to Start-Job
+    if (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue) {
+        $job = Start-ThreadJob -ScriptBlock $reminderScript -ArgumentList $seconds, $Message, $SnoozeAndDismiss.IsPresent
+        
+        # Register cleanup event for when the job completes
+        $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
+            if ($Event.Sender.State -in @("Completed", "Failed", "Stopped")) {
+                Remove-Job -Job $Event.Sender -Force -ErrorAction SilentlyContinue
+                Unregister-Event -SubscriptionId $EventSubscriber.SubscriptionId -ErrorAction SilentlyContinue
+            }
+        } -SupportEvent
+    }
+    else {
+        # Fallback to Start-Job with cleanup after completion
+        $job = Start-Job -ScriptBlock $reminderScript -ArgumentList $seconds, $Message, $SnoozeAndDismiss.IsPresent
+        
+        # Register cleanup event for when the job completes
+        $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
+            if ($Event.Sender.State -in @("Completed", "Failed", "Stopped")) {
+                Remove-Job -Job $Event.Sender -Force -ErrorAction SilentlyContinue
+                Unregister-Event -SubscriptionId $EventSubscriber.SubscriptionId -ErrorAction SilentlyContinue
+            }
+        } -SupportEvent
+    }
+}
