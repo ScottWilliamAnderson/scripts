@@ -24,6 +24,13 @@ A collection of useful scripts I've created, or make use of.
 setup-git
 ```
 
+- [**Start-Opencode**](StartOpencode/README.md) (PowerShell) - One-command launcher for [opencode](https://opencode.ai) inside a [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) sandbox in WSL, with phone access via Tailscale
+
+```powershell
+Start-Opencode liftosaur            # resume/create sandbox, open web UI
+Start-Opencode myrepo -Llama        # also allow local llama-server on Windows host
+```
+
 ### Network Utilities
 - [**ForceConnectWiFi**](ForceConnectWifi/README.md) (PowerShell) - WiFi connection manager with retry capabilities
 ```powershell

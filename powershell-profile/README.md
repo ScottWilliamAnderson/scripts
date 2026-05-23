@@ -114,6 +114,7 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `vlcs`   | Quickly activates the VLC speedup AutoHotkey script (`vlc-speed-controls.ahk`) from anywhere |
 | `notify` | Displays a Windows toast notification using BurntToast |
 | `remind-me` | Sets a timer-based reminder notification (e.g., `remind-me 5m "Take a break"`) |
+| `Start-Opencode` | Launches [opencode](https://opencode.ai) inside an OpenShell sandbox in WSL, port-forwards the web UI to Windows, opens browser. See [StartOpencode/README.md](../StartOpencode/README.md). |
 
 ## ⏱️ Startup Performance
 
