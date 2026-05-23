@@ -46,6 +46,11 @@ $t4 = [DateTime]::Now
 . "$PSScriptRoot\gpg-setup.ps1"
 if ($enableLogging) { Log-Timing -section "Import gpg-setup.ps1" -startTime $t4 -endTime ([DateTime]::Now) }
 
+# Import the Start-Opencode script
+$t5b = [DateTime]::Now
+. "$repoPath\StartOpencode\Start-Opencode.ps1"
+if ($enableLogging) { Log-Timing -section "Import Start-Opencode.ps1" -startTime $t5b -endTime ([DateTime]::Now) }
+
 # Import the commands script (this runs Oh-My-Posh and sets up deferred loading)
 $t5 = [DateTime]::Now
 . "$PSScriptRoot\commands.ps1"
