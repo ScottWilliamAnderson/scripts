@@ -41,6 +41,11 @@ function global:Start-Opencode {
         Force a fresh prompt for the opencode web password, recreate the openshell
         provider, attach it, and restart opencode web so the new password takes
         effect immediately. Use this if you ever need to change the web password.
+    .PARAMETER RestartWeb
+        Force a restart of opencode-web inside the sandbox, even if it's already
+        running and the env hash matches. Use after editing opencode.jsonc or
+        installing/removing a plugin — those changes only take effect on a
+        fresh launch.
     .PARAMETER SrcRoot
         Root directory for projects. Default $env:USERPROFILE\src.
     .PARAMETER Distro
@@ -89,6 +94,9 @@ function global:Start-Opencode {
 
         [Parameter()]
         [switch]$NoRipgrep,
+
+        [Parameter()]
+        [switch]$RestartWeb,
 
         [Parameter()]
         [string]$SrcRoot = (Join-Path $env:USERPROFILE 'src'),
@@ -609,7 +617,7 @@ function global:Start-Opencode {
             }
         }
 
-        $shouldRestart = $isRunning -and ($passwordChanged -or $envIsStale)
+        $shouldRestart = $isRunning -and ($passwordChanged -or $envIsStale -or $RestartWeb)
         if ($shouldRestart) {
             Invoke-Wsl "openshell sandbox exec -n $Project --no-tty -- bash -c 'pkill -f opencode.web; sleep 1'" | Out-Null
             $isRunning = $false
@@ -688,8 +696,9 @@ function global:Start-Opencode {
         Write-Host ""
         Write-Host "Add an opencode plugin (e.g. session auto-rename):" -ForegroundColor DarkGray
         Write-Host '  wsl openshell sandbox connect <project>   # then inside the sandbox:' -ForegroundColor DarkGray
-        Write-Host '  mkdir -p ~/.config/opencode && nano ~/.config/opencode/opencode.json' -ForegroundColor DarkGray
-        Write-Host '  # add: { "plugin": ["opencode-session-auto-rename"] }, then Stop-Opencode + Start-Opencode' -ForegroundColor DarkGray
+        Write-Host '  nano ~/.config/opencode/opencode.jsonc    # add "plugin": ["..."] to the existing config' -ForegroundColor DarkGray
+        Write-Host '  # then: Start-Opencode <project> -RestartWeb' -ForegroundColor DarkGray
+        Write-Host '  # NOTE: -Recreate wipes the sandbox; you will lose ~/.config/opencode edits.' -ForegroundColor DarkGray
 
         if (-not $NoBrowser) {
             Start-Process $url
