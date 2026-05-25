@@ -114,7 +114,12 @@ This guide will help you set up your PowerShell profile to import a custom profi
 | `vlcs`   | Quickly activates the VLC speedup AutoHotkey script (`vlc-speed-controls.ahk`) from anywhere |
 | `notify` | Displays a Windows toast notification using BurntToast |
 | `remind-me` | Sets a timer-based reminder notification (e.g., `remind-me 5m "Take a break"`) |
+| `Initialize-Opencode` | One-time setup or migration of the OpenShell gateway to run under the non-root WSL user, with autostart at WSL boot. Idempotent. |
 | `Start-Opencode` | Launches [opencode](https://opencode.ai) inside an OpenShell sandbox in WSL, port-forwards the web UI to Windows, opens browser. See [StartOpencode/README.md](../StartOpencode/README.md). |
+| `Stop-Opencode` | Stops opencode web in a sandbox and removes the port forward. Idempotent. |
+| `Show-OpencodeLogs` | Tails the opencode web log inside a sandbox (Ctrl-C to exit). `-NoFollow` to print last N lines and exit. |
+| `Get-OpencodeStatus` | One-page overview of the Opencode setup: gateway, sandboxes (phase + opencode-web running? + project dirs), port forwards. |
+| `Set-OpencodeEgress` | Hot-add (`-Allow github.com,pypi.org,...`) or remove (`-Deny ...`) outbound domains on a running sandbox; each entry covers the apex and `*.apex`. |
 
 ## ⏱️ Startup Performance
 

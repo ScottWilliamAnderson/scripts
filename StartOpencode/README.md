@@ -9,15 +9,37 @@ One-command launcher for [opencode](https://opencode.ai) running inside a sandbo
 
 > Open laptop → `Start-Opencode <repo>` → coding in the browser, on phone too.
 
+## 🏁 First-time setup
+
+Run **once** to provision the OpenShell gateway under your normal (non-root) WSL user with autostart enabled:
+
+```powershell
+Initialize-Opencode
+```
+
+It auto-detects what's needed and prints a plan before doing anything (one sudo prompt; one OpenRouter key prompt unless you pass `-SkipOpenRouter`). Each step skips itself if already done, so you can re-run it any time the gateway gets wedged.
+
+What it ends up giving you:
+- Gateway runs as **your** WSL user (least-privilege; not root)
+- `OPENSHELL_DRIVERS=vm` set in `~/.config/openshell/gateway.env` so the MicroVM driver is pinned
+- User added to the `kvm` group (vm driver needs `/dev/kvm`)
+- systemd-user lingering enabled → gateway auto-starts at every WSL boot
+- `openrouter` provider registered with your API key
+- Local gateway registered (mTLS, `--local`)
+
+If your install originally put openshell under root (e.g. `curl ... | sh`'d before a normal user existed), `Initialize-Opencode` additionally removes root's autostart and wipes the stale TLS copies it left in your user's home. Any sandboxes that lived under root's state directory will not be visible afterwards — recreate them with `Start-Opencode <project>` as needed.
+
 ## 📌 Features
 
 - 🧱 Per-project OpenShell sandbox (isolated FS, network policy enforced)
-- 🔑 opencode web password stored DPAPI-encrypted under `%LOCALAPPDATA%` — never on the command line
+- 🔑 opencode web password stored DPAPI-encrypted under `%LOCALAPPDATA%` and piped via stdin (never CLI args, never PS history) into a 0600 file inside the sandbox where opencode-web reads it
 - 📡 Auto port-forward from sandbox → Windows → Tailscale tailnet
 - 📱 Phone access via Tailscale MagicDNS at `http://<your-wsl-tailnet-name>:4096` (the script prints both the MagicDNS URL and the raw Tailscale IP, so you have a fallback if MagicDNS isn't resolving on the phone)
 - 🦙 Optional `-Llama` flag opens a policy hole to a local `llama-server` on the Windows host
 - ♻️ Idempotent: re-run any time to resume; sandbox, forward and opencode are reused if already up
 - 🧹 `-Recreate` to nuke and start fresh when an upload goes stale
+- 🛑 Companion cmdlets `Stop-Opencode <project>` and `Show-OpencodeLogs <project>` for daily teardown / debugging
+- 🚦 Auto-detects port conflicts across projects and gives a clear error (with the offending sandbox name) instead of silently shadowing the other forward
 
 ## 🚀 Usage
 
@@ -49,6 +71,13 @@ Start-Opencode liftosaur
 
 # Switch projects mid-day — second sandbox on a different port
 Start-Opencode trvl -Port 4097
+
+# Stop a running project (kills opencode web + removes the forward; idempotent)
+Stop-Opencode liftosaur
+
+# Tail logs for debugging
+Show-OpencodeLogs liftosaur            # follow
+Show-OpencodeLogs liftosaur -NoFollow  # last 50 lines then exit
 
 # Use a local llama.cpp model from inside the sandbox
 Start-Opencode liftosaur -Llama
@@ -98,7 +127,8 @@ Start-Opencode liftosaur -Recreate
 
 ## 🔐 Security notes
 
-- The opencode web password lives in a DPAPI-encrypted file scoped to your Windows user account — equivalent in strength to Windows Credential Manager entries.
+- The opencode web password lives in a DPAPI-encrypted file scoped to your Windows user account — equivalent in strength to Windows Credential Manager entries. It is delivered into the sandbox via stdin into a 0600 file at `/sandbox/.opencode_web_env`; the password never appears in process listings, PowerShell history, or `openshell sandbox exec` command lines.
+- An OpenShell `provider` is *not* used for the web password. Provider credentials are opaque placeholder tokens that the egress proxy substitutes only in outbound HTTP requests, so they would never resolve into a real value for opencode-web's local Basic Auth check. (OpenRouter still uses a provider — that's the right tool for *outbound* API credentials.)
 - The sandbox is sealed by OpenShell's network policy. Outbound HTTPS only works to hosts explicitly allowlisted (this script adds `app.opencode.ai`, `api.opencode.ai`, and your llama-server IP if `-Llama`). OpenRouter is allowed via the `openrouter` provider's auto-policy.
 - Tailscale only exposes the port to *your* tailnet devices, not the public internet.
 

@@ -24,9 +24,10 @@ A collection of useful scripts I've created, or make use of.
 setup-git
 ```
 
-- [**Start-Opencode**](StartOpencode/README.md) (PowerShell) - One-command launcher for [opencode](https://opencode.ai) inside a [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) sandbox in WSL, with phone access via Tailscale
+- [**Start-Opencode**](StartOpencode/README.md) (PowerShell) - One-command launcher for [opencode](https://opencode.ai) inside a [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) sandbox in WSL, with phone access via Tailscale. Ships with companion cmdlets `Initialize-Opencode` (one-time setup), `Stop-Opencode`, and `Show-OpencodeLogs`.
 
 ```powershell
+Initialize-Opencode                 # first-time setup (or migration) of the gateway
 Start-Opencode liftosaur            # resume/create sandbox, open web UI
 Start-Opencode myrepo -Llama        # also allow local llama-server on Windows host
 ```
