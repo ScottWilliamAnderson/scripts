@@ -51,6 +51,11 @@ $t5b = [DateTime]::Now
 . "$repoPath\StartOpencode\Start-Opencode.ps1"
 if ($enableLogging) { Log-Timing -section "Import Start-Opencode.ps1" -startTime $t5b -endTime ([DateTime]::Now) }
 
+# Import the Initialize-Opencode script (one-time setup / migration)
+$t5c = [DateTime]::Now
+. "$repoPath\StartOpencode\Initialize-Opencode.ps1"
+if ($enableLogging) { Log-Timing -section "Import Initialize-Opencode.ps1" -startTime $t5c -endTime ([DateTime]::Now) }
+
 # Import the commands script (this runs Oh-My-Posh and sets up deferred loading)
 $t5 = [DateTime]::Now
 . "$PSScriptRoot\commands.ps1"
