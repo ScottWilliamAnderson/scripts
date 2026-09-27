@@ -24,6 +24,12 @@ A collection of useful scripts I've created, or make use of.
 setup-git
 ```
 
+- [**nvim**](nvim/README.md) (Lua) - LazyVim config with Java (jdtls) and Python (ty + ruff), linked into `%LOCALAPPDATA%\nvim`
+
+```powershell
+New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\nvim" -Target "$env:USERPROFILE\src\scripts\nvim"
+```
+
 ### Network Utilities
 - [**ForceConnectWiFi**](ForceConnectWifi/README.md) (PowerShell) - WiFi connection manager with retry capabilities
 ```powershell

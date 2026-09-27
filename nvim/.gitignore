@@ -1,0 +1,10 @@
+tt.*
+.tests
+doc/tags
+debug
+.repro
+foo.*
+*.log
+data
+# per-machine LazyVim state (news seen, :LazyExtras picks); extras are imported in lua/config/lazy.lua
+lazyvim.json
