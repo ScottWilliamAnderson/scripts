@@ -1,0 +1,57 @@
+{
+  "theme": "dark",
+  "extensions": [
+    "-builtin:mcp"
+  ],
+  "externalEditor": "edit",
+  "packages": [
+    "npm:@narumitw/pi-file-context",
+    "npm:@narumitw/pi-lsp",
+    "npm:@narumitw/pi-chrome-devtools",
+    "npm:@narumitw/pi-btw",
+    "npm:@narumitw/pi-caffeinate",
+    "npm:@narumitw/pi-usage",
+    "npm:@narumitw/pi-analytics",
+    "npm:@narumitw/pi-stamp",
+    "npm:@narumitw/pi-statusline",
+    "npm:@narumitw/pi-tool",
+    "npm:pi-mcp-adapter",
+    "npm:pi-add-dir",
+    "npm:pi-fusion",
+    "npm:pi-copy-response",
+    "npm:pi-copilot-usage",
+    "git:github.com/aliceisjustplaying/pi-herdr-subagents@7c4d0c482db1d2bdc70c01512feaee1f95fec7fa",
+    "git:github.com/aliceisjustplaying/pi-you-should-know@feabd83c43305a9e99a0fe320d34388b3d4f0392"
+  ],
+  "defaultProvider": "openrouter",
+  "defaultModel": "moonshotai/kimi-k2.6",
+  "enabledModels": [
+    "openrouter/deepseek/deepseek-v4.1-flash",
+    "openrouter/openai/gpt-6-luna",
+    "openrouter/anthropic/claude-opus-5.5",
+    "openrouter/moonshotai/kimi-k3",
+    "openrouter/xiaomi/mimo-v2.6-flash",
+    "openrouter/openai/gpt-6.1-sol",
+    "github-copilot/gpt-6.1-sol",
+    "github-copilot/gpt-6-luna",
+    "github-copilot/kimi-k3"
+  ],
+  "tuiMode": "regular",
+  "hideThinkingBlock": true,
+  "showCacheMissNotices": true,
+  "quietStartup": true,
+  "collapseChangelog": true,
+  "enableInstallTelemetry": false,
+  "doubleEscapeAction": "tree",
+  "compaction": {
+    "enabled": true
+  },
+  "retry": {
+    "maxRetries": 10,
+    "maxAgentDelayMs": 60000
+  },
+  "terminal": {
+    "showTerminalProgress": true,
+    "clearOnShrink": true
+  }
+}

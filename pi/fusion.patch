@@ -1,0 +1,439 @@
+diff --git a/src/fusion.ts b/src/fusion.ts
+index 10673d0..e7b1953 100644
+--- a/src/fusion.ts
++++ b/src/fusion.ts
+@@ -2,7 +2,7 @@
+  * Core fusion pipeline: panel execution + judge analysis.
+  */
+ 
+-import type { Api, Model } from "@earendil-works/pi-ai";
++import type { Api, AssistantMessage, Model } from "@earendil-works/pi-ai";
+ import type { ExtensionContext, ModelRegistry } from "@earendil-works/pi-coding-agent";
+ import {
+ 	loadConfig,
+@@ -38,6 +38,8 @@ import type {
+ 	FusionAnalysis,
+ 	FusionConfig,
+ 	FusionDetails,
++	FusionLiveDetails,
++	FusionLiveModel,
+ 	FusionOptions,
+ 	FusionResult,
+ 	PanelResult,
+@@ -56,6 +58,51 @@ export function emptyPanelError(content: string, capped: boolean): string | unde
+ 	return capped ? "no text answer (tool-call budget or loop guard hit)" : "empty response";
+ }
+ 
++/** Fresh live-progress state for one model. */
++function newLiveModel(model: string): FusionLiveModel {
++	return { model, phase: "queued", chars: 0, thinking_chars: 0, tools: 0, turns: 0, preview: "" };
++}
++
++/** Tail of the streamed text, so the live view shows the newest output rather than the start. */
++function tailPreview(text: string, max = 600): string {
++	const trimmed = text.replace(/\s+$/, "");
++	if (!trimmed) return "";
++	return trimmed.length > max ? "…" + trimmed.slice(-max) : trimmed;
++}
++
++/** Fold one streamed response-so-far into the model's live state. */
++function applyLivePartial(live: FusionLiveModel, partial: AssistantMessage): void {
++	const text = getTextContent(partial);
++	live.chars = text.length;
++	live.preview = tailPreview(text);
++	live.thinking_chars = partial.content.reduce(
++		(n, part) => n + (part.type === "thinking" ? part.thinking.length : 0),
++		0,
++	);
++}
++
++/** Compact text mirror of the live view, for non-TUI clients and print mode. */
++function formatLiveProgress(live: FusionLiveDetails, concurrency: number): string {
++	const lines = [`Fusion ${live.phase} (${concurrency === 1 ? "serialized" : `${concurrency} concurrent`}):`];
++	for (const model of live.panel) lines.push(`  ${liveIcon(model.phase)} ${model.model} — ${liveStatus(model)}`);
++	if (live.judge) lines.push(`  ${liveIcon(live.judge.phase)} judge ${live.judge.model} — ${liveStatus(live.judge)}`);
++	return lines.join("\n");
++}
++
++function liveIcon(phase: FusionLiveModel["phase"]): string {
++	return phase === "done" ? "✓" : phase === "failed" ? "✗" : phase === "running" ? "…" : "·";
++}
++
++function liveStatus(model: FusionLiveModel): string {
++	if (model.error) return `failed: ${model.error}`;
++	const toolNote = model.tools
++		? `, ${model.tools} tool call${model.tools === 1 ? "" : "s"}`
++		: "";
++	if (model.phase === "queued") return "queued";
++	if (model.phase === "running") return `streaming${model.chars ? ` (${model.chars} chars)` : ""}${toolNote}`;
++	return `done (${model.chars} chars${toolNote})`;
++}
++
+ export interface PanelReasoningPlan {
+ 	requested?: ThinkingLevel;
+ 	effective: Record<string, ThinkingLevel | null>;
+@@ -268,15 +315,58 @@ export async function runFusion(
+ 		details: { phase: "resolving", panel_profile: profileName, panel_reasoning: panelReasoningDetails },
+ 	});
+ 
++	// Live per-model progress. A panel can run for minutes between phase updates, so stream
++	// each model's partial text into `details.live` (rendered by the tool's custom renderer)
++	// and mirror a compact form into the text `content` for non-TUI clients. Deltas are
++	// throttled; phase transitions always emit immediately.
++	const PROGRESS_THROTTLE_MS = 150;
++	const panelLive = new Map<string, FusionLiveModel>();
++	for (const name of panelModelNames) panelLive.set(name, newLiveModel(name));
++	const judgeLive = newLiveModel(judgeName);
++	let judgeRunning = false;
++	let lastProgressAt = 0;
++
++	const liveSnapshot = (phase: string): FusionLiveDetails => ({
++		phase,
++		// Clone each model: partial updates are re-rendered later, so every payload must be
++		// an immutable snapshot rather than a reference the streaming loop keeps mutating.
++		panel: panelModelNames.map((name) => ({ ...(panelLive.get(name) as FusionLiveModel) })),
++		...(judgeRunning ? { judge: { ...judgeLive } } : {}),
++	});
++
++	const emitProgress = (phase: string, force = false) => {
++		const now = Date.now();
++		if (!force && now - lastProgressAt < PROGRESS_THROTTLE_MS) return;
++		lastProgressAt = now;
++		const live = liveSnapshot(phase);
++		onUpdate?.({
++			content: [{ type: "text", text: formatLiveProgress(live, panelConcurrency) }],
++			details: { phase, panel_profile: profileName, panel_reasoning: panelReasoningDetails, live },
++		});
++	};
++	// Guard expensive per-delta work (joining the whole answer-so-far) behind the same
++	// throttle that gates emitting, so a long stream stays O(n) rather than O(n²).
++	const progressThrottled = () => Date.now() - lastProgressAt < PROGRESS_THROTTLE_MS;
++	emitProgress("panel_start", true);
++
+ 	// Run panel (serialized when mutating tools are active).
+ 	const rawPanelResults = await mapWithConcurrencyLimit(panel, panelConcurrency, async (model): Promise<PanelResult> => {
+ 		const base = { model: modelDisplay(model), provider: model.provider, id: model.id };
++		const live = panelLive.get(base.model) as FusionLiveModel;
++		live.phase = "running";
++		emitProgress("panel", true);
+ 		const effectiveReasoning = panelReasoning.effective[base.model] ?? undefined;
++		const onPartial = (partial: AssistantMessage) => {
++			if (progressThrottled()) return;
++			applyLivePartial(live, partial);
++			emitProgress("panel");
++		};
++		let result: PanelResult;
+ 		try {
+ 			let content: string;
+ 			let tools: PanelToolUsage | undefined;
+ 			if (toolsEnabled) {
+-				const result = await callModelWithTools(
++				const toolResult = await callModelWithTools(
+ 					registry,
+ 					model,
+ 					PANEL_SYSTEM_PROMPT_WITH_TOOLS,
+@@ -287,22 +377,45 @@ export async function runFusion(
+ 					toolDefs,
+ 					maxToolCalls,
+ 					ctx,
+-					undefined,
++					(ev) => {
++						live.tools += 1;
++						live.turns = ev.turn;
++						emitProgress("panel");
++					},
+ 					effectiveReasoning,
++					onPartial,
+ 				);
+-				content = getTextContent(result.message);
+-				tools = { turns: result.turns, tool_calls: result.toolCalls, capped: result.cappedOut };
++				content = getTextContent(toolResult.message);
++				tools = { turns: toolResult.turns, tool_calls: toolResult.toolCalls, capped: toolResult.cappedOut };
+ 			} else {
+-				const response = await callModelText(registry, model, PANEL_SYSTEM_PROMPT, taskText, maxPanelOutputTokens, temperature, signal, effectiveReasoning);
++				const response = await callModelText(
++					registry,
++					model,
++					PANEL_SYSTEM_PROMPT,
++					taskText,
++					maxPanelOutputTokens,
++					temperature,
++					signal,
++					effectiveReasoning,
++					onPartial,
++				);
+ 				content = getTextContent(response);
+ 			}
+ 			// Empty output is a failure, not a blank "success" — keep it out of the judge.
+ 			const error = emptyPanelError(content, tools?.capped ?? false);
+-			return { ...base, content: error ? "" : content, ...(error ? { error } : {}), ...(tools ? { tools } : {}) };
++			result = { ...base, content: error ? "" : content, ...(error ? { error } : {}), ...(tools ? { tools } : {}) };
++			live.phase = error ? "failed" : "done";
++			if (error) live.error = error;
+ 		} catch (err) {
+ 			const message = err instanceof Error ? err.message : String(err);
+-			return { ...base, content: "", error: message };
++			result = { ...base, content: "", error: message };
++			live.phase = "failed";
++			live.error = message;
+ 		}
++		live.chars = result.content.length;
++		live.preview = tailPreview(result.content);
++		emitProgress("panel", true);
++		return result;
+ 	});
+ 
+ 	const successful = rawPanelResults.filter((r): r is PanelResult & { error: undefined } => !r.error);
+@@ -329,9 +442,10 @@ export async function runFusion(
+ 			{
+ 				type: "text",
+ 				text:
+-					successful.length === 1
++					(successful.length === 1
+ 						? `Panel complete (${successful.length}/${panel.length}). Only one model succeeded; skipping judge synthesis.`
+-						: `Panel complete (${successful.length}/${panel.length}). Running judge...`,
++						: `Panel complete (${successful.length}/${panel.length}). Running judge...`) +
++					(failed.length > 0 ? `\n  failed: ${failed.map((f) => `${f.model} (${f.error})`).join(", ")}` : ""),
+ 			},
+ 		],
+ 		details: { phase: successful.length === 1 ? "single_response" : "judging", panel_reasoning: panelReasoningDetails },
+@@ -363,6 +477,9 @@ export async function runFusion(
+ 				.join("\n\n");
+ 
+ 		try {
++			judgeRunning = true;
++			judgeLive.phase = "running";
++			emitProgress("judging", true);
+ 			const judgeResponse = await callModelText(
+ 				registry,
+ 				judge,
+@@ -372,13 +489,24 @@ export async function runFusion(
+ 				temperature,
+ 				signal,
+ 				judgeReasoning.effective,
++				(partial) => {
++					if (progressThrottled()) return;
++					applyLivePartial(judgeLive, partial);
++					emitProgress("judging");
++				},
+ 			);
+ 			const judgeText = getTextContent(judgeResponse);
+ 			analysis = extractJson<FusionAnalysis>(judgeText);
++			judgeLive.phase = "done";
++			judgeLive.chars = judgeText.length;
++			judgeLive.preview = tailPreview(judgeText);
+ 		} catch (err) {
+ 			console.error("[pi-fusion] judge failed:", err);
+ 			analysis = undefined;
++			judgeLive.phase = "failed";
++			judgeLive.error = err instanceof Error ? err.message : String(err);
+ 		}
++		emitProgress("judging", true);
+ 	}
+ 
+ 	const details: FusionDetails = {
+diff --git a/src/index.ts b/src/index.ts
+index e2d9dc2..2276adb 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -8,7 +8,8 @@
+  * answer.
+  */
+ 
+-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
++import type { ExtensionAPI, ExtensionContext, Theme } from "@earendil-works/pi-coding-agent";
++import { Text } from "@earendil-works/pi-tui";
+ import type { AutocompleteItem } from "@earendil-works/pi-tui";
+ import { Type } from "typebox";
+ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+@@ -26,7 +27,7 @@ import { modelDisplay } from "./models.ts";
+ import { clampMaxToolCalls, isMutatingSelection, selectionLabel } from "./tools.ts";
+ import { selectFusionSetup, type FusionMode, type FusionSetupProfile, type FusionSetupState } from "./ui.ts";
+ import { formatResult } from "./format.ts";
+-import type { FooterDisplay, FusionOptions, ThinkingLevel, ToolMode } from "./types.ts";
++import type { FooterDisplay, FusionLiveDetails, FusionLiveModel, FusionOptions, ThinkingLevel, ToolMode } from "./types.ts";
+ const FusionParams = Type.Object(
+ 	{
+ 		prompt: Type.String({
+@@ -386,6 +387,39 @@ async function applySetup(
+ 	return true;
+ }
+ 
++/**
++ * Render the live streaming view. Text (not markdown) keeps partial, in-flight output
++ * stable and cheap to redraw on every throttled update.
++ */
++function renderLiveProgress(live: FusionLiveDetails, theme: Theme): Text {
++	const lines: string[] = [theme.fg("accent", theme.bold(`Fusion ${live.phase}`))];
++	const modelLine = (model: FusionLiveModel, label = model.model): string => {
++		const icon =
++			model.phase === "done"
++				? theme.fg("success", "✓")
++				: model.phase === "failed"
++					? theme.fg("error", "✗")
++					: model.phase === "running"
++						? theme.fg("warning", "…")
++						: theme.fg("dim", "·");
++		const head = `${icon} ${theme.fg("toolTitle", label)}`;
++		if (model.error) return `${head} ${theme.fg("error", model.error)}`;
++		const bits = [model.phase === "running" ? "streaming" : model.phase];
++		if (model.chars) bits.push(`${model.chars} chars`);
++		if (model.thinking_chars) bits.push(`${model.thinking_chars} thinking`);
++		if (model.tools) bits.push(`${model.tools} tool${model.tools === 1 ? "" : "s"}`);
++		return `${head} ${theme.fg("muted", bits.join(" · "))}`;
++	};
++	for (const model of live.panel) {
++		lines.push(modelLine(model));
++		if (model.preview) {
++			for (const part of model.preview.split("\n").slice(-3)) lines.push(theme.fg("dim", `    ${part}`));
++		}
++	}
++	if (live.judge) lines.push(modelLine(live.judge, `judge ${live.judge.model}`));
++	return new Text(lines.join("\n"), 0, 0);
++}
++
+ export default function (pi: ExtensionAPI) {
+ 	let pendingPanel: PendingPanelSelection | undefined;
+ 
+@@ -407,6 +441,22 @@ export default function (pi: ExtensionAPI) {
+ 			"The fusion tool accepts only prompt and conversation-context controls; panel, judge, reasoning, tools, and budgets remain user-owned configuration.",
+ 		],
+ 		parameters: FusionParams,
++		renderResult(result, { expanded, isPartial }, theme) {
++			const details = result.details as { live?: FusionLiveDetails } | undefined;
++			if (isPartial && details?.live) return renderLiveProgress(details.live, theme);
++			// Final (or non-live) output: mirror pi's default text fallback, including truncation.
++			const text = result.content
++				.filter((c): c is { type: "text"; text: string } => c.type === "text")
++				.map((c) => c.text)
++				.join("\n");
++			if (!text) return new Text("", 0, 0);
++			const lines = text.split("\n");
++			const shown = expanded ? lines : lines.slice(0, 10);
++			let out = shown.map((line) => theme.fg("toolOutput", line)).join("\n");
++			const remaining = lines.length - shown.length;
++			if (remaining > 0) out += theme.fg("muted", `\n... (${remaining} more lines)`);
++			return new Text(out, 0, 0);
++		},
+ 		async execute(_toolCallId, params, signal, onUpdate, ctx) {
+ 			const consumed = consumePendingPanel(pendingPanel, ctx.sessionManager.getSessionId());
+ 			pendingPanel = consumed.pending;
+diff --git a/src/llm.ts b/src/llm.ts
+index 9f1ec71..575b115 100644
+--- a/src/llm.ts
++++ b/src/llm.ts
+@@ -13,7 +13,7 @@ import {
+ 	type ToolResultMessage,
+ 	type ThinkingLevel,
+ } from "@earendil-works/pi-ai";
+-import { complete } from "@earendil-works/pi-ai/compat";
++import { stream } from "@earendil-works/pi-ai/compat";
+ import type { ExtensionContext, ModelRegistry } from "@earendil-works/pi-coding-agent";
+ import { TOOL_OUTPUT_MAX_BYTES } from "./config.ts";
+ import { modelDisplay } from "./models.ts";
+@@ -37,6 +37,9 @@ export interface ModelReasoningResolution {
+ 	warning?: string;
+ }
+ 
++/** Receives the live response-so-far on every streamed text/thinking/tool delta. */
++export type PartialHandler = (partial: AssistantMessage) => void;
++
+ /** Resolve without clamping so configured cost/effort changes are never silent. */
+ export function resolveModelReasoning(
+ 	model: Model<Api>,
+@@ -87,12 +90,14 @@ export async function callModelText(
+ 	temperature: number,
+ 	signal: AbortSignal | undefined,
+ 	reasoning?: ThinkingLevel,
++	onPartial?: PartialHandler,
+ ): Promise<AssistantMessage> {
+ 	const options = await buildCompleteOptions(registry, model, maxTokens, temperature, signal, reasoning);
+ 	return runComplete(
+ 		model,
+ 		{ systemPrompt, messages: [{ role: "user", content: userText, timestamp: Date.now() }] },
+ 		options,
++		onPartial,
+ 	);
+ }
+ 
+@@ -128,6 +133,7 @@ export async function callModelWithTools(
+ 	ctx: ExtensionContext,
+ 	onToolEvent?: (ev: { name: string; turn: number; ok: boolean }) => void,
+ 	reasoning?: ThinkingLevel,
++	onPartial?: PartialHandler,
+ ): Promise<ToolLoopResult> {
+ 	const options = await buildCompleteOptions(registry, model, maxTokens, temperature, signal, reasoning);
+ 	const tools: Tool[] = toolDefs.map((d) => ({ name: d.name, description: d.description, parameters: d.parameters }));
+@@ -142,7 +148,7 @@ export async function callModelWithTools(
+ 	let errorStreak = 0;
+ 
+ 	while (true) {
+-		const resp = await runComplete(model, { systemPrompt, messages, tools }, options);
++		const resp = await runComplete(model, { systemPrompt, messages, tools }, options, onPartial);
+ 		turns++;
+ 
+ 		const calls = resp.content.filter((c): c is ToolCall => c.type === "toolCall");
+@@ -186,7 +192,7 @@ export async function callModelWithTools(
+ 			// explicitly told to answer now). System-prompt nudge avoids an illegal trailing
+ 			// user message after tool results.
+ 			const finalSystem = `${systemPrompt}\n\nYou have reached the tool-call limit. Write your complete final answer now using only what you have already gathered — do not request any more tools.`;
+-			const finalMsg = await runComplete(model, { systemPrompt: finalSystem, messages }, options);
++			const finalMsg = await runComplete(model, { systemPrompt: finalSystem, messages }, options, onPartial);
+ 			turns++;
+ 			return { message: finalMsg, turns, toolCalls, cappedOut: true };
+ 		}
+@@ -197,8 +203,22 @@ async function runComplete(
+ 	model: Model<Api>,
+ 	context: { systemPrompt: string; messages: Message[]; tools?: Tool[] },
+ 	options: CompleteOptions,
++	onPartial?: PartialHandler,
+ ): Promise<AssistantMessage> {
+-	const resp = await complete(model, context, options);
++	// Stream rather than complete so callers can surface live progress. The final
++	// message is authoritative; deltas only feed the optional progress callback.
++	const events = stream(model, context, options);
++	let final: AssistantMessage | undefined;
++	for await (const event of events) {
++		if (event.type === "done") {
++			final = event.message;
++		} else if (event.type === "error") {
++			final = event.error;
++		} else if (onPartial && (event.type === "text_delta" || event.type === "thinking_delta" || event.type === "toolcall_delta")) {
++			onPartial(event.partial);
++		}
++	}
++	const resp = final ?? (await events.result());
+ 	if (resp.stopReason === "error" || resp.stopReason === "aborted") {
+ 		throw new Error(resp.errorMessage ?? `Model stopped with reason: ${resp.stopReason}`);
+ 	}
+diff --git a/src/types.ts b/src/types.ts
+index 631089a..856b55b 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -91,6 +91,26 @@ export interface PanelResult {
+ 	tools?: PanelToolUsage;
+ }
+ 
++/** Live per-model state streamed into a running tool's `details.live` for the UI. */
++export interface FusionLiveModel {
++	model: string;
++	phase: "queued" | "running" | "done" | "failed";
++	/** Characters of the current turn's streamed answer text. */
++	chars: number;
++	thinking_chars: number;
++	tools: number;
++	turns: number;
++	/** Tail of the streamed answer, so the view shows the newest output. */
++	preview: string;
++	error?: string;
++}
++
++export interface FusionLiveDetails {
++	phase: string;
++	panel: FusionLiveModel[];
++	judge?: FusionLiveModel;
++}
++
+ export interface FusionAnalysis {
+ 	consensus: string[];
+ 	contradictions: Array<{ topic: string; stances: Array<{ model: string; stance: string }> }>;

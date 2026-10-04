@@ -1,0 +1,89 @@
+{
+	"palettePreset": "tokyo-night",
+	"density": "compact",
+	"separator": "none",
+	"segments": [
+		"provider",
+		"model",
+		"thinking",
+		"cwd",
+		"branch",
+		"tools",
+		"context",
+		"tokens",
+		"cache",
+		"cost",
+		"time"
+	],
+	"segmentText": {
+		"brand": {
+			"prefix": "",
+			"suffix": ""
+		},
+		"provider": {
+			"prefix": "🔌 ",
+			"suffix": ""
+		},
+		"model": {
+			"prefix": "🤖 ",
+			"suffix": "",
+			"truncationLength": 36,
+			"truncationSymbol": "…",
+			"truncationDirection": "start"
+		},
+		"thinking": {
+			"prefix": "🧠 ",
+			"suffix": ""
+		},
+		"cwd": {
+			"prefix": "📁 ",
+			"suffix": ""
+		},
+		"branch": {
+			"prefix": "🌿 ",
+			"suffix": ""
+		},
+		"tools": {
+			"prefix": "",
+			"suffix": ""
+		},
+		"context": {
+			"prefix": "🪟 ctx ",
+			"suffix": ""
+		},
+		"tokens": {
+			"prefix": "🔢 ",
+			"suffix": ""
+		},
+		"cache": {
+			"prefix": "📦 ",
+			"suffix": ""
+		},
+		"cost": {
+			"prefix": "💸 $",
+			"suffix": ""
+		},
+		"time": {
+			"prefix": "🕒 ",
+			"suffix": ""
+		},
+		"turn": {
+			"prefix": "🔁 #",
+			"suffix": ""
+		}
+	},
+	"extensionStatusIcons": {
+		"accounts": "👤",
+		"caffeinate": "💊",
+		"chrome-devtools": "🌐",
+		"github-pr": "🔎",
+		"goal": "🎯",
+		"google-genai": "✨",
+		"lsp": "🧰",
+		"plan-mode": "📝",
+		"retry": "🔁",
+		"subagents": "🧑‍🤝‍🧑",
+		"sync": "🔄",
+		"usage": "📊"
+	}
+}

@@ -1,0 +1,7 @@
+{
+  "browser": {
+    "endpoint": "http://127.0.0.1:9222",
+    "autoLaunch": true,
+    "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+  }
+}

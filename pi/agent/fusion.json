@@ -1,0 +1,15 @@
+{
+  "panel": [
+    "openrouter/openai/gpt-6-luna",
+    "openrouter/xiaomi/mimo-v2.6-flash",
+    "openrouter/deepseek/deepseek-v4.1-flash"
+  ],
+  "judge": "openai/gpt-6-sol",
+  "panelReasoning": "high",
+  "judgeReasoning": "minimal",
+  "panelTools": "all",
+  "panelToolsConsent": true,
+  "maxPanelOutputTokens": 32768,
+  "maxCompletionTokens": 8192,
+  "maxToolCalls": 40
+}

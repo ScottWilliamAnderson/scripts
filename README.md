@@ -17,6 +17,8 @@ A collection of useful scripts I've created, or make use of.
 ## 📂 Available Scripts
 
 ### Development Tools
+- [**pi**](pi/README.md) (PowerShell) - Personal Pi config and local patches
+
 - [**git-config**](git-config/README.md) (PowerShell) - Automated Git configuration with productivity-focused defaults
 
 ```powershell
