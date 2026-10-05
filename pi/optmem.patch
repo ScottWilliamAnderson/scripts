@@ -1,0 +1,14 @@
+diff --git a/memo b/memo
+index 224409b..d739b7a 100644
+--- a/memo
++++ b/memo
+@@ -42,7 +42,8 @@ def pretty(p):
+ 
+ # Every command this tool prints has to RUN. After `curl | sh` nothing is on
+ # PATH, so a bare `memo nap 0-1 "..."` would not: the tool names itself.
+-ME = pretty(__file__)
++# Windows/uv: every command printed by the tool must be runnable here.
++ME = 'uv run --no-project python "' + os.path.abspath(__file__).replace("\\", "/") + '"'
+ 
+ # The sizes a memory may override in its own `config` file: the default, and
+ # what it means. `memo config` shows and edits them. The globals below start

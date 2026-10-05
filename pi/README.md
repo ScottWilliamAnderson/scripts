@@ -17,4 +17,6 @@ git -C "$env:USERPROFILE\.pi\agent\npm\node_modules\pi-fusion" apply "$PWD\pi\fu
 `fusion.patch` preserves the custom live-progress display. If a patch no longer applies, review it against the updated package.
 
 The agent files are model presets, not fixed roles. The parent supplies the task.
-See the native docs for [Herdr subagents](https://github.com/aliceisjustplaying/pi-herdr-subagents), [You Should Know](https://github.com/aliceisjustplaying/pi-you-should-know) and the [Durable SDK](https://github.com/earendil-works/pi/tree/main/packages/durable).
+See the native docs for [Herdr subagents](https://github.com/aliceisjustplaying/pi-herdr-subagents), [You Should Know](https://github.com/aliceisjustplaying/pi-you-should-know) and [OptMem](https://github.com/VictorTaelin/OptMem).
+
+OptMem lives in `~/.optmem`; its private memory isn't included here. `optmem.patch` makes the upstream tool's printed commands use uv on Windows. Reapply it after installing or updating the tool.
